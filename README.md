@@ -24,5 +24,5 @@ Robotic motion controlled by neural sequential dynamical invariants of a living 
       `plot_controller.py`
       `plot_record_video.py`
 ### Data Analysis
-  - Scripts for analysis in Python for the speed stability in the robot's movement
-  - Folder: `speed_tests`
+  - Scripts for analysis in Python for invariants translation and for the speed stability in the robot's movement
+  - Folder: `data-analysis`
