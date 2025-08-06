@@ -395,19 +395,21 @@ cm_per_px = 0.03
 
 intervals_tags = ["lppd", "pd"]
 
-experiments = ["sub1", "sub6", "sub14", "sub15_2", "sub16"]
+#experiments = ["sub1", "sub6", "sub14", "sub15_2", "sub16"]
+experiments = ["experiment1", "experiment2", "experiment4", "experiment5", "experiment6"]
 n_exp = len(experiments)
 
 files = {}
 durations = {}
 starts = {}
 
-files["lppd"] = ["2022y_11m_16d/17h_20m_12s.txt", "2022y_11m_16d/17h_50m_39s.txt", "2022y_11m_23d/16h_33m_17s.txt", "2022y_11m_28d/16h_14m_40s.txt", "2022y_11m_23d/17h_7m_11s.txt"]
-files["pd"] = ["2022y_11m_16d/17h_32m_0s.txt", "2022y_11m_16d/17h_58m_46s.txt", "2022y_11m_23d/16h_45m_38s.txt", "2022y_11m_28d/16h_21m_26s.txt", "2022y_11m_23d/17h_12m_20s.txt"]
+#files["lppd"] = ["2022y_11m_16d/17h_20m_12s.txt", "2022y_11m_16d/17h_50m_39s.txt", "2022y_11m_23d/16h_33m_17s.txt", "2022y_11m_28d/16h_14m_40s.txt", "2022y_11m_23d/17h_7m_11s.txt"]
+#files["pd"] = ["2022y_11m_16d/17h_32m_0s.txt", "2022y_11m_16d/17h_58m_46s.txt", "2022y_11m_23d/16h_45m_38s.txt", "2022y_11m_28d/16h_21m_26s.txt", "2022y_11m_23d/17h_12m_20s.txt"]
+
+files["lppd"] = ["experiment1_lppd_signal.txt", "experiment2_lppd_signal.txt", "experiment3_lppd_signal.txt", "experiment4_lppd_signal.txt", "experiment5_lppd_signal.txt"]
+files["pd"] = ["experiment1_pd_signal.txt", "experiment2_pd_signal.txt", "experiment3_pd_signal.txt", "experiment4_pd_signal.txt", "experiment5_pd_signal.txt"]
 
 # Values of video duration: time to reach final mark
-# durations["lppd"] = [52, 54, 44, 39, 49]
-# durations["pd"] = [26, 62, 41, 35, 40]
 durations["lppd"] = [49, 54, 33, 35, 50]
 durations["pd"] = [24, 62, 41, 35, 40]
 
@@ -455,22 +457,6 @@ print("computing speeds...")
 n = 25 * 1  # 25 ptos (frames) son un 1s
 org_speeds, org_times, org_distances = compute_speeds(n, resample=False)
 speeds, times, distances = compute_speeds(n, resample=True)
-
-# for i in range(n_exp):
-#     for tag in intervals_tags:
-#         plt.figure()
-#         plt.title("Experiment %d, %s"%((i+1),tag))
-#         plt.plot(distances[i][tag], speeds[i][tag])
-#         plt.plot(org_distances[i][tag], org_speeds[i][tag])
-#         print("Experiment %d, %s, std inter: %f, std: %f"%((i+1), tag, np.std(speeds[i][tag]),np.std(org_speeds[i][tag])))
-#         print("interpolated")
-#         dist = get_std_distribution_sliding(speeds[i][tag], speeds[i][tag].shape[0]//4)
-#         print(dist)
-#         print("original")
-#         dist = get_std_distribution_sliding(org_speeds[i][tag], org_speeds[i][tag].shape[0]//4)
-#         print(dist)
-
-# plt.show()
 
 for i in range(n_exp):
     fig, axs = plt.subplots(nrows=2, figsize=(20,10), sharex=True)
@@ -673,65 +659,15 @@ def test(test, data, equal_var=True, verbose=True, center='median'):
     return p_values
 
 def print_all_tests(data):
-    # print("\n\nt-test")
-    # test(stats.ttest_ind, data, verbose=False)
-
-    # print("\n\nf-test")
-    # test(stats.f_oneway, data)
 
     print("\n\nmannwhitneyu")
     test(stats.mannwhitneyu, data, verbose = False)
 
     print("\n\nKolmogorov-Smirnov")
     test(stats.ks_2samp, data, verbose=False)
-    # print("\n\nTest Levene")
-    # # https://www.statology.org/levenes-test-python/
-    # # ‘trimmed’: recommended for heavy-tailed distributions.
-    # test(stats.levene, data, verbose=False, center='mean')
-    # print("\n\nTest Levene median")
-    # test(stats.levene, data, verbose=False, center='median')
-    # print("\n\nTest Levene trimmed")
-    # test(stats.levene, data, verbose=False, center='trimmed')
 
 # wsize = 20
 wsize=4
-
-# print("\t WSIZE = %d"%wsize)
-# print("\n\n RESAMPLED")
-# print("\n\nTEST ON STD DISTRIBUTIONS")
-
-# std_distributions = get_std_distribution(speeds, wsize)
-
-# print_all_tests(std_distributions)
-
-# means_lppd = [np.mean(std_distributions[i]["lppd"]) for i in range(n_exp)]
-# means_pd = [np.mean(std_distributions[i]["pd"]) for i in range(n_exp)]
-
-# stdslp = [np.std(std_distributions[i]["lppd"]) for i in range(n_exp)]
-# stdspd = [np.std(std_distributions[i]["pd"]) for i in range(n_exp)]
-
-
-# plt.figure(figsize=(fig_width//2, row_height))
-# plt.xlabel("Experiment No.")
-# plt.ylabel("Mean of standard deviations")
-# plt.errorbar(x=[1, 2, 3, 4, 5], y=means_lppd, yerr=stdslp, xerr=0.05, fmt=' ', label=labels[0])
-# plt.errorbar(x=[1.1, 2.1, 3.1, 4.1, 5.1], y=means_pd, yerr=stdspd, xerr=0.05, fmt=' ', label=labels[1])
-# ax = plt.gca()
-# remove_axes(ax)
-# plt.title("RESAMPLED\n wsize=1/%d"%wsize)
-# plt.tight_layout()
-# plt.savefig('./images/std_distribution_errors_RESAMPLED_w%d.%s' % (wsize, fig_format), format=fig_format)
-
-
-# fig, axs = plt.subplots(n_exp, 2, figsize=(8,20))
-# plt.suptitle("RESAMPLED\n wsize=%d"%wsize)
-# for i in range(n_exp):
-#     for i_tag, tag in enumerate(intervals_tags):
-#         axs[i, i_tag].set_title("Experiment %d, %s" % ((i+1), tag))
-#         axs[i, i_tag].hist(std_distributions[i][tag])
-# plt.tight_layout()
-# plt.savefig('./images/std_distribution_hist_RESAMPLED_w%d.%s' % (wsize, fig_format), format=fig_format)
-
 
 print("\n\nNO RESAMPLED")
 
@@ -801,17 +737,3 @@ plt.tight_layout()
 plt.savefig('./images/std_distribution_errors_ORIGINAL_w%d.%s' % (wsize, fig_format), format=fig_format)
 
 
-
-# fig, axs = plt.subplots(n_exp, 2, figsize=(8,20))
-# plt.suptitle("NO RESAMPLED\n wsize=%d"%wsize)
-# for i in range(n_exp):
-#     for i_tag, tag in enumerate(intervals_tags):
-#         axs[i, i_tag].set_title("Experiment %d, %s" % ((i+1), tag))
-#         axs[i, i_tag].hist(org_std_distributions[i][tag])
-# plt.tight_layout()
-# plt.savefig('./images/std_distribution_hist_ORIGINAL_w%d.%s' % (wsize, fig_format), format=fig_format)
-
-# plt.show()
-
-
-# plt.show()
