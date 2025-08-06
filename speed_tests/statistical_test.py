@@ -12,7 +12,7 @@ cm_per_px = 0.03
 
 intervals_tags = ["lppd", "pd"]
 
-experiments = ["sub1", "sub6", "sub14", "sub15_2", "sub16"]
+experiments = ["experiment1", "experiment2", "experiment3", "experiment4", "experiment5"]
 n_exp = len(experiments)
 
 times = []
@@ -216,22 +216,9 @@ stdslp = []
 stdspd = []
 
 for i in range(n_exp):
-        # if i == 3:
-        #     ini = 10
-        # else:
-        #     ini = 0
-
         d_lppd = list(distances[i]['lppd'][ini:])
         d_pd = list(distances[i]['pd'][ini:])
 
-
-        # equality_lp = pg.homoscedasticity([d_lppd,d_pd])
-        
-
-        # df = pd.DataFrame(list(zip(d_lppd,d_pd)))
-        
-        # welch = pg.welch_anova(df, dv= 0, between = 1)
-        # print(welch)
 
         meanslp = np.append(meanslp, np.mean(d_lppd))
         meanspd = np.append(meanspd, np.mean(d_pd))
@@ -241,8 +228,6 @@ for i in range(n_exp):
 plt.xlabel("Experiment No.")
 plt.ylabel("Standard Deviation")
 plt.title("With all timesteps n = 25*2")
-#plt.errorbar(x= [1,2,3,4,5], y = meanslp, yerr=stdslp, xerr = 0.05, fmt = ' ')
-#plt.errorbar(x= [1.1,2.1,3.1,4.1,5.1], y = meanspd, yerr=stdspd, xerr = 0.05, fmt = ' ')
 
 plt.bar([1,2,3,4,5], stdslp, width=0.2, label='LPPD interval', color=colors[0])
 plt.bar([1.3,2.3,3.3,4.3,5.3], stdspd, width=0.2, label='PD burst', color=colors[1])
