@@ -8,7 +8,7 @@ import numpy as np
 from collections import deque
 import imutils
 import time
-
+from pathlib import Path
 import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument('video', type=str, help='path to video file. Videos located in ../data/videos/')
@@ -25,9 +25,13 @@ pts_times = deque()
 
 
 videofile = args.video
-exp_name = videofile.replace(".mp4", "")
-outfile = "captura_patas_"+exp_name+".txt"
-
+video_path = videofile.replace(".mp4", "")
+exp_name = Path(video_path).stem
+script_dir = Path(__file__).parent
+project_root = script_dir.parent
+outfile = project_root / "data" / "legs_tracking" / f"{exp_name}.txt"
+print(project_root)
+print(outfile)
 lower_red = np.array([130,0,210])
 upper_red = np.array([180,255,255])
 

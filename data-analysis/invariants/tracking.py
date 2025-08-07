@@ -16,10 +16,10 @@ pts_yellow = deque()
 pts_times = deque()
 
 
-videofile = "cpgbot.mp4"
+videofile = "../data/cpgbot.mp4"
 upper_left = (0, 600)
 bottom_right = (1800, 1000)
-outfile = "captura_patas.txt"
+outfile = "../data/legs_tracking.txt"
 
   
 # Lee el video del fichero
