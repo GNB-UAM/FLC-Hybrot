@@ -11,7 +11,7 @@ import time
 
 import argparse
 parser = argparse.ArgumentParser()
-parser.add_argument('image', type=str, help='path to image file')
+parser.add_argument('video', type=str, help='path to video file. Videos located in ../data/videos/')
 args = parser.parse_args()
 
 # Array que guarda las posiciones de cada objeto (deque es como un array mas eficiente)
@@ -24,7 +24,7 @@ pts_times = deque()
 
 
 
-videofile = args.image
+videofile = args.video
 exp_name = videofile.replace(".mp4", "")
 outfile = "captura_patas_"+exp_name+".txt"
 
