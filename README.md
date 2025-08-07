@@ -2,8 +2,8 @@
 This repository contains all the code necessary to run the FunctionalLivingCircuit(FLC)-Hybrot. The oscillation ranges of the motors of this hexapod robot are controlled online in **real-time** by the neural activity of a functional living circuit and includes a external light input from the context modifying the activity by a closed-loop connection.
 
 This repository is associated to the following pulication:
-Robotic motion controlled by neural sequential dynamical invariants of a living CPG with sensory feedback from the robot. 
 
+> Hybrot validation of a neural sequential dynamical principle for autonomous coordination. Rodrigo Amaducci, Irene Elices, Pablo Sanchez-Martin, Alicia Garrido-Peña, Manuel Reyes-Sanchez, Carlos Garcia-Saura, Rafael Levi, Francisco B. Rodriguez, Pablo Varona
 
 ## Code structure
 ### Arduino controller
@@ -24,5 +24,5 @@ Robotic motion controlled by neural sequential dynamical invariants of a living 
       `plot_controller.py`
       `plot_record_video.py`
 ### Data Analysis
-  - Scripts for analysis in Python for invariants translation and for the speed stability in the robot's movement
+  - Scripts for analysis in Python for invariants translation and for the speed stability in the robot's movement. This scripts where used for the Figures in the published work associated to this repository. Follow the instructions in data-analysis/data/README.md to reproduce them. 
   - Folder: `data-analysis`
