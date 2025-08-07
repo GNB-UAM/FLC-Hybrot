@@ -290,7 +290,7 @@ def get_intervals_dict():
     return v_data, periods, intervals, ini_times, end_times
 
 
-def compute_speeds(n, resample, wsize=20, path='captura_patas_videos/'):
+def compute_speeds(n, resample, wsize=20, path='../data/legs_tracking/'):
     # Create general list for all experiments
     speeds = []
     times = []
@@ -395,16 +395,12 @@ cm_per_px = 0.03
 
 intervals_tags = ["lppd", "pd"]
 
-#experiments = ["sub1", "sub6", "sub14", "sub15_2", "sub16"]
-experiments = ["experiment1", "experiment2", "experiment4", "experiment5", "experiment6"]
+experiments = ["experiment1", "experiment2", "experiment3", "experiment4", "experiment5"]
 n_exp = len(experiments)
 
 files = {}
 durations = {}
 starts = {}
-
-#files["lppd"] = ["2022y_11m_16d/17h_20m_12s.txt", "2022y_11m_16d/17h_50m_39s.txt", "2022y_11m_23d/16h_33m_17s.txt", "2022y_11m_28d/16h_14m_40s.txt", "2022y_11m_23d/17h_7m_11s.txt"]
-#files["pd"] = ["2022y_11m_16d/17h_32m_0s.txt", "2022y_11m_16d/17h_58m_46s.txt", "2022y_11m_23d/16h_45m_38s.txt", "2022y_11m_28d/16h_21m_26s.txt", "2022y_11m_23d/17h_12m_20s.txt"]
 
 files["lppd"] = ["experiment1_lppd_signal.txt", "experiment2_lppd_signal.txt", "experiment3_lppd_signal.txt", "experiment4_lppd_signal.txt", "experiment5_lppd_signal.txt"]
 files["pd"] = ["experiment1_pd_signal.txt", "experiment2_pd_signal.txt", "experiment3_pd_signal.txt", "experiment4_pd_signal.txt", "experiment5_pd_signal.txt"]
@@ -414,7 +410,7 @@ durations["lppd"] = [49, 54, 33, 35, 50]
 durations["pd"] = [24, 62, 41, 35, 40]
 
 labels = ["invariant", "no invariant"]
-prefix = "data/"
+prefix = "../data/recordings/"
 
 
 fs = 10000                                         # Sampling rate (in Hz)
@@ -448,8 +444,8 @@ norms_min["lppd"] = [407.7, 967.7, 533, 517.3, 741.6]
 norms_max["lppd"] = [1308.2, 1890.1, 1047.3, 733.8, 1326.2]
 norms_min["pd"] = [81.4, 119, 110.1, 117.0, 124.3]
 norms_max["pd"] = [173.9, 179.6, 165.7, 162.3, 160.2]
-MAX_AMPLITUDE = 40#Max angle
-MIN_AMPLITUDE = 6#Min angle
+MAX_AMPLITUDE = 40 #Max angle
+MIN_AMPLITUDE = 6 #Min angle
 
 
 # Get intervals, speed and plot main figure
@@ -493,7 +489,8 @@ for i in range(n_exp):
         ax2.legend()
         
         plt.title("Experiment %d, %s"%(i+1, tag))
-    plt.show()
+    plt.close()
+    # plt.show()
 
 
 
@@ -529,115 +526,11 @@ axs[-1, 1].set_xlabel("Distance (cm)")
 axs[-1, 0].set_xlabel("Cycle period (s)")
 
 plt.tight_layout()
-plt.savefig('./images/speed_panel.%s' % fig_format, format=fig_format)
+plt.savefig('./speed_panel.%s' % fig_format, format=fig_format)
 # plt.show()
 
 secs = 1/fs
 colors = ['red', 'blue']
-
-
-for i in range(n_exp):
-    fig_trace, axs_traces = plt.subplots(4, 2, figsize=(fig_width, row_height*n_exp),sharex=True)
-    fig_trace.suptitle('Experiment %d' % (i+1))
-
-    for i_tag, tag in enumerate(intervals_tags):
-        v_lp = v_data[i][tag]['lp']
-        v_pd = v_data[i][tag]['pd']
-
-        time = np.arange(0, len(v_lp), 1) * secs
-
-        for ini, end in zip(ini_times[i][tag]['lp'][:-1], ini_times[i][tag]['lp'][1:]):
-            axs_traces[0, i_tag].hlines(y=v_lp[ini]+0.1, xmin=ini * secs, xmax=end * secs, color='green', linewidth=6, alpha=0.6, label='period')  
-            axs_traces[1, i_tag].hlines(y=v_pd[ini]+0.1, xmin=ini * secs, xmax=end * secs, color='green', linewidth=6, alpha=0.6)  
-
-        # Plot v_lp with horizontal lines
-        axs_traces[0, i_tag].plot(time, v_lp)
-        for ini, end in zip(ini_times[i][tag]['lp'], ini_times[i][tag]['pd']):
-            axs_traces[0, i_tag].hlines(y=v_lp[ini], xmin=ini * secs, xmax=end * secs, color='red', linewidth=6, alpha=0.4, label='lppd')
-
-        # Plot v_pd with horizontal lines
-        axs_traces[1, i_tag].plot(time, v_pd)
-        for ini, end in zip(ini_times[i][tag]['pd'], end_times[i][tag]['pd']):
-            axs_traces[1, i_tag].hlines(y=v_pd[ini], xmin=ini * secs, xmax=end * secs, color='blue', linewidth=6, alpha=0.4, label='pd')
-
-        # Plot speed values
-        axs_traces[2, i_tag].plot(org_times[i][tag], org_speeds[i][tag], label="Speed")
-        axs_traces[2, i_tag].set_ylabel('Speed (cm/s)')
-        axs_traces[2, i_tag].set_ylim(0,3)
-
-
-        if i == 3 and tag=='pd':
-            cycle_refs = np.array(ini_times[i][tag]['lp'][1:-2]) * secs
-
-            interval = np.array(ints[i][tag][1:])
-            period = np.array(periods[i][tag][1:])
-        else:
-            cycle_refs = np.array(ini_times[i][tag]['lp'][1:-1]) * secs
-
-            interval = np.array(ints[i][tag][1:])
-            period = np.array(periods[i][tag][1:])
-
-        print(cycle_refs.shape, interval.shape, period.shape)
-
-        axs_traces2 = axs_traces[2, i_tag].twinx()
-
-
-
-        # axs_traces2.vlines(x=cycle_refs, ymin=0, ymax=interval, color=colors[i_tag], alpha=0.4, label=tag)
-        # axs_traces2.vlines(x=cycle_refs, ymin=0, ymax=period, color='green', alpha=0.4, label='period')
-        # # axs_traces2.vlines(x=cycle_refs, ymin=0, ymax=interval/period, color='purple', alpha=0.4)
-
-        # relation = interval[1:]/interval[:-1]
-        relation = interval/period
-        # norm_relation =  (relation - np.min(interval))/(np.max(interval) - np.min(interval))
-        norm_relation =  (relation - np.min(interval))/(np.max(interval) - np.min(interval))
-        # norm_relation = (relation - np.min(period)) / (np.max(period) - np.min(period))
-        axs_traces2.plot(cycle_refs, norm_relation, color='purple', alpha=0.4, label='interval relation')
-        # axs_traces2.plot(cycle_refs[:-1], relation, color='purple', alpha=0.4, label='interval relation')
-
-        # Set labels for the y-axes
-        axs_traces2.set_ylabel('Interval/period relation')
-
-
-        # axs_traces2.set_ylim(0.6, 0.8)
-
-        # Set labels for the y-axes
-        # axs_traces2.set_ylabel('Intervals (s)')
-        axs_traces2.legend()
-
-        # Plot speed values
-        axs_traces[3, i_tag].plot(org_times[i][tag], org_speeds[i][tag], label="Speed")
-        axs_traces[3, i_tag].set_ylabel('Speed (cm/s)')
-        axs_traces[3, i_tag].set_ylim(0,3)
-
-        # Plot cycle values
-        axs_traces2 = axs_traces[3, i_tag].twinx()
-
-        #normalized and transposed to angles
-        c = 2.5#longitud de la pata
-        norms_min = {}
-        norms_max = {}
-        norms_min["lppd"] = [407.7, 967.7, 533, 517.3, 741.6]
-        norms_max["lppd"] = [1308.2, 1890.1, 1047.3, 733.8, 1326.2]
-        norms_min["pd"] = [81.4, 119, 110.1, 117.0, 124.3]
-        norms_max["pd"] = [173.9, 179.6, 165.7, 162.3, 160.2]
-        MAX_AMPLITUDE = 40#Max angle
-        MIN_AMPLITUDE = 6#Min angle
-
-
-        angles= ((interval*1000 - norms_min[tag][i]) / (norms_max[tag][i]-norms_min[tag][i])) * (MAX_AMPLITUDE - MIN_AMPLITUDE) + MIN_AMPLITUDE
-        # axs_traces2.plot(cycle_refs, angles/period, color='green', alpha=0.4)
-        axs_traces2.plot(cycle_refs, 2*c*np.sin(angles*2*np.pi/360.)/period, color='green', alpha=0.4, label = 'Angle/period')       
-        axs_traces2.set_ylabel('Angle/period relation')
-        axs_traces2.legend()
-
-
-        axs_traces[0, 0].set_title("LPPD")
-        axs_traces[0, 1].set_title("PD")
-
-    plt.tight_layout()
-
-plt.show()
 
 # Statistical test
 def test(test, data, equal_var=True, verbose=True, center='median'):
@@ -647,7 +540,7 @@ def test(test, data, equal_var=True, verbose=True, center='median'):
         d_lppd = list(data[i]['lppd'])
         d_pd = list(data[i]['pd'])
 
-        # Realiza la prueba t de Student
+        # T-student test
         t_stat, p_value = test(d_lppd, d_pd)
 
         if test == stats.levene:
@@ -734,6 +627,6 @@ remove_axes(ax)
 # plt.title("NO RESAMPLED\n wsize=1/%d"%wsize)
 plt.legend()
 plt.tight_layout()
-plt.savefig('./images/std_distribution_errors_ORIGINAL_w%d.%s' % (wsize, fig_format), format=fig_format)
+plt.savefig('./std_distribution_errors_ORIGINAL_w%d.%s' % (wsize, fig_format), format=fig_format)
 
 
