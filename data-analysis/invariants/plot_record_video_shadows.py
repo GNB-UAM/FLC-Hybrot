@@ -71,7 +71,8 @@ obs_time = 10
 video_delay = 0.5  # Delay añadido al video en segundos
 
 # ===== DATOS DE SEÑALES LIVING =====
-filename = "controlador_robot/data/2021y_12m_1d/15h_33m_8s.txt"
+# filename = "../controlador_robot/data/2021y_12m_1d/15h_33m_8s.txt"
+filename = "../data/intervals_data.txt"
 dataset = pd.read_csv(filename, delimiter=' ', header=2)
 data = dataset.values
 
@@ -149,7 +150,7 @@ for pt in period_times:
 electrical_shadow_mask = np.array(electrical_shadow_mask)
 
 # ===== DATOS DE VIDEO TRACKING =====
-filename_video = "captura_patas1.txt"
+filename_video = "../data/legs-tracking.txt"
 dataset_video = pd.read_csv(filename_video, delimiter=' ', header=0)
 data_video = dataset_video.values
 
