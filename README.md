@@ -24,7 +24,9 @@ This repository is associated to the following pulication:
       `plot_controller.py`
       `plot_record_video.py`
 ### Data Analysis
-  - Scripts for analysis in Python for invariants translation and for the speed stability in the robot's movement. This scripts where used for the Figures in the published work associated to this repository. Follow the instructions in data-analysis/data/README.md to reproduce them. 
+  - Scripts for analysis in Python for invariants translation and for the speed stability in the robot's movement. This scripts where used for the Figures in the published work associated to this repository.
+
+**Follow the instructions in [data-analysis/data/README.md](data-analysis/data/README.md) to reproduce them or generate new Figures based on your own data.**
   - Folder: `data-analysis`
 
 ## System versions
