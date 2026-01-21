@@ -1,4 +1,4 @@
-# CPG invariants translation to robot locomotion
+# Scripts to plot data obtained from the control the FLC-Hybrot by a living CPG
 Data used in manuscript:
 
 > Hybrot validation of a neural sequential dynamical principle for autonomous coordination. Rodrigo Amaducci, Irene Elices, Pablo Sanchez-Martin, Alicia Garrido-Peña, Manuel Reyes-Sanchez, Carlos Garcia-Saura, Rafael Levi, Francisco B. Rodriguez, Pablo Varona
