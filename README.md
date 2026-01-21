@@ -26,3 +26,23 @@ This repository is associated to the following pulication:
 ### Data Analysis
   - Scripts for analysis in Python for invariants translation and for the speed stability in the robot's movement. This scripts where used for the Figures in the published work associated to this repository. Follow the instructions in data-analysis/data/README.md to reproduce them. 
   - Folder: `data-analysis`
+
+## System versions
+
+- Computer: 4-core Intel Core i7-6700 3.40 GHz processor and 16 GB RAM. 
+- Operating system: Debian 9 with kernel 4.9.0-4 and Preempt-RT real-time patch.
+- Bluetooth device: external USB Nano Stick v4.0 antenna.
+- Bluetooth protocol: BlueZ 5.43, the open-source official Linux Bluetooth protocol stack.
+- Control software: C++ and compiled with G++ 6.3.
+- Communication with National Instruments board: Comedi 0.7.76 drivers.
+- Data transfer to the robot: the open-source LibSerial 1.0.0 library.
+
+## Robot printing
+The model for the robot can be found at: Micro-Hexapod by Ijon https://www.thingiverse.com/thing:5156
+
+Printed using a Prusa i3 3D printer.
+
+List of periferical devices attatch to Arduiono BQ Zum Core:
+- Photoresistor for light detection
+- Atmel ATMEGA328P
+- LEDs
