@@ -160,7 +160,7 @@ void burst_detection_invariant (Params * params, double * input_values, int i) {
 			data[INV_ARRAYS_SIZES][INV_SIZE_LPPD_INTERVAL]++;
 
 			if (size_period > 0) {
-				sprintf(buf, "%.0f\t%.0f", (data[INV_LPPD_INTERVAL][size_lppd_interval-1] * 1 / 30), data[INV_LP_PERIOD_TIMES][size_period-1] * 1);
+				sprintf(buf, "%.0f,%.0f", (data[INV_LPPD_INTERVAL][size_lppd_interval-1] * 1 / 30), data[INV_LP_PERIOD_TIMES][size_period-1] * 1);
 				//printf("%s\n", buf);
 				*(params->serial_stream) << buf << std::endl;
 			}
@@ -243,12 +243,12 @@ void burst_detection_invariant (Params * params, double * input_values, int i) {
 					double norm_var2 = (((data[INV_LPPD_INTERVAL][size_lppd_interval]) - NORM_MIN) / (NORM_MAX-NORM_MIN)) * (MAX_AMPLITUDE - MIN_AMPLITUDE) + MIN_AMPLITUDE;
 					norm_var2 *= TEMPORAL_FACTOR;
 
-					sprintf(buf, "%.0f\t%.0f", norm_var2, norm_var1);
+					sprintf(buf, "%.0f,%.0f", norm_var2, norm_var1);
 					//printf("%f %f %f %d %s\n", data[INV_LPPD_INTERVAL][size_lppd_interval], NORM_MIN, NORM_MAX, MAX_AMPLITUDE, buf);
 					if (norm_var1 < MIN_PERIOD || norm_var2 > MAX_AMPLITUDE) {
 						printf("%s\n", buf);
 					}
-					
+					printf("Writing %s to serial\n",buf);
 					*(params->serial_stream) << buf << std::endl;
 				}
 			} else if (USE_INTERVAL == 1) {
@@ -258,10 +258,11 @@ void burst_detection_invariant (Params * params, double * input_values, int i) {
 					double norm_var2 = (((data[INV_PD_BURST][size_pd_burst]) - NORM_MIN) / (NORM_MAX-NORM_MIN)) * (MAX_AMPLITUDE - MIN_AMPLITUDE) + MIN_AMPLITUDE;
 					norm_var2 *= TEMPORAL_FACTOR;
 
-					sprintf(buf, "%.0f\t%.0f", norm_var2, norm_var1);
+					sprintf(buf, "%.0f,%.0f", norm_var2, norm_var1);
 					if (norm_var1 < MIN_PERIOD || norm_var2 > MAX_AMPLITUDE) {
 						printf("%s\n", buf);
 					}
+					printf("Writing %s to serial\n",buf);
 					
 					*(params->serial_stream) << buf << std::endl;
 				}
@@ -272,7 +273,7 @@ void burst_detection_invariant (Params * params, double * input_values, int i) {
 				double norm_var1 = data[INV_LP_PERIOD_TIMES][size_period] * TEMPORAL_FACTOR;
 				double norm_var2 = (((data[INV_PDLP_INTERVAL][size_pdlp_interval] * TEMPORAL_FACTOR) - NORM_MIN) / NORM_MAX) * MAX_AMPLITUDE;
 
-				sprintf(buf, "%.0f\t%.0f", norm_var2, norm_var1);
+				sprintf(buf, "%.0f,%.0f", norm_var2, norm_var1);
 				if (norm_var1 < MIN_PERIOD || norm_var2 > MAX_AMPLITUDE) {
 					printf("%s\n", buf);
 				}
@@ -285,7 +286,7 @@ void burst_detection_invariant (Params * params, double * input_values, int i) {
 				double norm_var1 = data[INV_LP_PERIOD_TIMES][size_period] * TEMPORAL_FACTOR;
 				double norm_var2 = (((data[INV_PD_HYPER][size_pd_hyper] * TEMPORAL_FACTOR) - NORM_MIN) / NORM_MAX) * MAX_AMPLITUDE;
 
-				sprintf(buf, "%.0f\t%.0f", norm_var2, norm_var1);
+				sprintf(buf, "%.0f,%.0f", norm_var2, norm_var1);
 				if (norm_var1 < MIN_PERIOD || norm_var2 > MAX_AMPLITUDE) {
 					printf("%s\n", buf);
 				}
