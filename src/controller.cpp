@@ -17,6 +17,8 @@ struct option main_opts[] = {
 	{"output_channels", required_argument, NULL, 'o'},
 	{"serial_port", required_argument, NULL, 'p'},
 	{"output_factor", required_argument, NULL, 'O'},
+	{"light_threshold", required_argument, NULL, 'l'},
+	{"light_gain", required_argument, NULL, 'g'},
 	{"help", no_argument, NULL, 'h'},
 	{0},
 };
@@ -36,6 +38,8 @@ void do_print_usage ()
 	printf("\t\t -o, --output_channels: output channels, separated by commas (ej: 0,2,3,7)\n");
 	printf("\t\t -p, --serial_port: serial port\n");
 	printf("\t\t -O, --output_factor: output factor\n");
+	printf("\t\t -l, --light_threshold: light threshold\n");
+	printf("\t\t -g, --light_gain: light gain\n");
 	printf("\t\t -h, --help: print this help\n");
 }
 
@@ -114,9 +118,12 @@ int main (int argc, char *argv[]) {
 	int pulse_duration = 1;
 	double target_current = 0;
 
+	int light_threshold = 900; // parameter for photodiode 
+	double light_gain = -1; // light gain factor for direct conversion to current
+
 	int ret;
 
-	while ((ret = getopt_long(argc, argv, "E:f:t:L:U:c:S:D:i:o:p:O:h", main_opts, NULL)) >= 0) {
+	while ((ret = getopt_long(argc, argv, "E:f:t:L:U:c:S:D:i:o:p:O:l:g:h", main_opts, NULL)) >= 0) {
 		switch (ret) {
 			case 'E':
 				experiment_type = atoi(optarg);
@@ -155,6 +162,12 @@ int main (int argc, char *argv[]) {
 			case 'O':
 				output_factor = atof(optarg);
 				break;
+			case 'l':
+				light_threshold = atoi(optarg);
+				break;
+			case 'g':
+				light_gain = atof(optarg);
+				break;
 			case 'h':
 			default:
 				do_print_usage();
@@ -187,6 +200,17 @@ int main (int argc, char *argv[]) {
 	}
 
 
+	if(light_gain < 0)
+	{
+		std::cout << "Light gain ignored" << std::endl;
+		std::cout << "Light threshold:" << light_threshold << std::endl;
+	}
+	else
+	{
+		std::cout << "Using light directly to current with gain " << light_gain << std::endl;
+	}
+
+
 	/****************************************************
     Open DAQ
     ****************************************************/
@@ -202,6 +226,8 @@ int main (int argc, char *argv[]) {
 
         return ERR;
     }
+
+    printf("DAQ connected correctly\n");
 
     input_values = (double *) malloc (sizeof(double) * n_in_chan);
     output_values = (double *) malloc (sizeof(double) * n_out_chan);
@@ -230,9 +256,9 @@ int main (int argc, char *argv[]) {
 		params->serial_stream->SetCharacterSize(CharacterSize::CHAR_SIZE_8);
 	}
 
-	// TODO Stop robot for calibration
+	// Stop robot for calibration
 	// The robot will start when receiving the first cycle
-	*(params->serial_stream) << '0\t0' << std::endl;
+	*(params->serial_stream) << '0,0' << std::endl;
 
 	printf("Start observation (%ds) and interaction (%ds)\n", observation_time/freq, duration/freq);
 
@@ -287,7 +313,7 @@ int main (int argc, char *argv[]) {
 	update_amplitude(params);
 
 	//TODO Empty serial buffer
-	*(params->serial_stream) << '0\t0' << std::endl;
+	*(params->serial_stream) << '0,0' << std::endl;
 
 
 	/****************************************************
@@ -379,7 +405,7 @@ int main (int argc, char *argv[]) {
 
     //TODO refractor to function
     //Stop robot
-	*(params->serial_stream) << '0\t0' << std::endl;
+	*(params->serial_stream) << '0,0' << std::endl;
 
 
 	/****************************************************
