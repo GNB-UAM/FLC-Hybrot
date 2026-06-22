@@ -230,6 +230,10 @@ int main (int argc, char *argv[]) {
 		params->serial_stream->SetCharacterSize(CharacterSize::CHAR_SIZE_8);
 	}
 
+	// TODO Stop robot for calibration
+	// The robot will start when receiving the first cycle
+	*(params->serial_stream) << '0\t0' << std::endl;
+
 	printf("Start observation (%ds) and interaction (%ds)\n", observation_time/freq, duration/freq);
 
 	/****************************************************
@@ -282,6 +286,10 @@ int main (int argc, char *argv[]) {
 	/* Update amplitude parameters */
 	update_amplitude(params);
 
+	//TODO Empty serial buffer
+	*(params->serial_stream) << '0\t0' << std::endl;
+
+
 	/****************************************************
     Interaction
     ****************************************************/
@@ -304,6 +312,7 @@ int main (int argc, char *argv[]) {
 				next_char = last_char;
 			}
 		}
+
 
 		/* Read from DAQ */
 		if (daq_read(session, n_in_chan, in_channels, input_values) != 0) {
@@ -367,6 +376,10 @@ int main (int argc, char *argv[]) {
     printf("Ended experiment. Saving data to file...\n");
     write_to_file(params, duration);
     printf("Data saved!\n");
+
+    //TODO refractor to function
+    //Stop robot
+	*(params->serial_stream) << '0\t0' << std::endl;
 
 
 	/****************************************************
