@@ -117,7 +117,7 @@ int main (int argc, char *argv[]) {
 	int pulse_duration = 1;
 	double target_current = 0;
 
-	int light_threshold = 900; // parameter for photodiode 
+	int light_threshold = 50; // parameter for photodiode 
 	double light_gain = -1; // light gain factor for direct conversion to current
 
 	int light_value;
@@ -261,6 +261,7 @@ int main (int argc, char *argv[]) {
 
 	// Stop robot for calibration
 	// The robot will start when receiving the first cycle
+	sleep(1);
 	*(params->serial_stream) << "0,0\n";
 
 
@@ -316,8 +317,6 @@ int main (int argc, char *argv[]) {
 	/* Update amplitude parameters */
 	update_amplitude(params);
 
-	//TODO Empty serial buffer
-	*(params->serial_stream) << "0,0\n";
 
 
 	/****************************************************
@@ -338,7 +337,7 @@ int main (int argc, char *argv[]) {
 		if (params->serial_stream->IsDataAvailable()) {
 			*(params->serial_stream) >> next_char;
 			light_value =  (int) next_char;
-			printf("Light value int %d\n", light_value);
+			/*printf("Light value %d\n", light_value);*/
 		}
 
 
@@ -376,11 +375,13 @@ int main (int argc, char *argv[]) {
 
 
         /* Stimulation */
-        if (next_char == '3') {
-			target_current = max_current;
+        if (light_value < light_threshold) {
+/*        	printf("light_value and light threshold: %d %d\n",light_value,light_threshold );
+*/			target_current = max_current;
 		} else {
 			target_current = 0;
 		}
+
         select_stimulus(params, output_values, target_current);
 
    		/* Write to DAQ */
@@ -398,6 +399,7 @@ int main (int argc, char *argv[]) {
 	}
 
 
+
 	/****************************************************
     Write to file
     ****************************************************/
@@ -405,16 +407,15 @@ int main (int argc, char *argv[]) {
     write_to_file(params, duration);
     printf("Data saved!\n");
 
-    //TODO refractor to function
-    //Stop robot
-	*(params->serial_stream) << '0,0' << std::endl;
 
+    // Reset Arduino
+	*(params->serial_stream) << "0,0\n";
 
 	/****************************************************
     Clean up and finish
     ****************************************************/
 
-	/*Send zero*/
+	/*Send zero to DAQ*/
     for (i = 0; i < n_out_chan; i++) {
         output_values[i] = 0;
     }
