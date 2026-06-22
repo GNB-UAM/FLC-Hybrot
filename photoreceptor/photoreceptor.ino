@@ -1,52 +1,48 @@
 #include "Oscillator.h"
 #include <Servo.h>
 
+int middle_amplitude = 10; // Middle motor needs a small amplitude (5-15)
 
 unsigned int A = 20; // Amplitude (higher -> longer steps) set 10-40
-unsigned int T = 1500, T_old; // Period (lower -> faster moves)
+unsigned int T = 1500;//, T_old; // Period (lower -> faster moves)
 Oscillator osc_middle, osc_right, osc_left;
 
 int lightPin = 1;
 
-char last = '2';
-char to_send = '1';
 
 char val = '0';
 int flag = 0;
 String str1 = "";
 String str2 = "";
 
-int ajuste_direccion = -6; // ESTO CALIBRA LA DIRECCIÓN
-// Valores negativos hacen que vaya para la derecha
+int ajuste_direccion = 0; // ESTO CALIBRA LA DIRECCIÓN
 int A_aux;
 
 void setup() {
   Serial.begin(19200); //El Bluetooth solo funciona a 19200
-  delay(1000); // Small startup delay, replace with start-button press (if present)
 
   //-- Attach the oscillators to the servos
   osc_middle.attach(2); // 2,3 and 4 are the digital pins
   osc_right.attach(4);
   osc_left.attach(3);
-  delay(100);
-  osc_middle.refresh();
-  osc_right.refresh();
-  osc_left.refresh();
-  //delay(10000); // 10 segundos de espera en la posición  central
 
+  osc_middle.SetA(0);
+  osc_right.SetA(0);
+  osc_left.SetA(0);
 
-  // NO CALIBRAR AQUÍ, tan solo colocar las patas están físicamente en la posición central
-  //-- Set the parameters
-  //osc_middle.SetO(0); // Correction for the offset of the servos
-  //osc_right.SetO(-5); //Grande 3, -30, 10
-  //osc_left.SetO(-5);  // Pequeno 10, -5, 5
+  // CALIBRA LA POSICION CENTRAL DE LAS PATAS
+  osc_middle.SetO(-10);
+  osc_right.SetO(10);
+  osc_left.SetO(-5);
 
-  osc_middle.SetO(0); // Correction for the offset of the servos
-  osc_right.SetO(-55); //Grande 3, -30, 10
-  osc_left.SetO(-5);  // Pequeno 10, -5, 5
+  // Mantener parado 3 segundos para comprobar posicion patas
+  while(millis() < 3000) {
+    osc_middle.refresh();
+    osc_right.refresh();
+    osc_left.refresh();
+  }
 
-  osc_middle.SetA(10); // Middle motor needs a small amplitude (5-15)
-  //osc_middle.SetA(20); // Middle motor needs a small amplitude (5-15)
+  osc_middle.SetA(middle_amplitude);
   osc_right.SetA(A + ajuste_direccion);
   osc_left.SetA(A);
 
@@ -66,48 +62,23 @@ void setup() {
   osc_right.SetPh( DEG2RAD( 0 )); //Grande 180
 }
 
+int lastTime = 0;
 void loop() {
   osc_middle.refresh();
   osc_right.refresh();
   osc_left.refresh();
 
-  int reading  = analogRead(lightPin);
-  if (reading >= 900) { // UMBRAL LUZ
-    to_send = '3';
-  } else {
-    to_send = '1';
+  unsigned char reading = map(analogRead(lightPin), 0,1023, 0,255);
+  if(millis() > lastTime+100) {
+    Serial.write(reading); // Send as a single byte 0-255
+    lastTime = millis();
   }
-
-
-  if (to_send != last) {
-    Serial.print(to_send);
-    last = to_send;
-  }
-
-  /*if (Serial.available() >= 1) {
-    val = Serial.read();
-
-    if (val != '\n') {
-      str1 += val;
-    } else {
-      T = str1.toInt() * 2;
-      //Serial.println(str1);
-      str1 = "";
-
-      osc_middle.SetT(T);
-      osc_right.SetT(T);
-      osc_left.SetT(T);
-    }
-    }*/
 
   if (Serial.available() >= 1) {
     val = Serial.read();
-    //mySerial.println(val, HEX);
-    //Serial.println(val);
-    //Serial.print(to_send);
 
     if (flag == 0) {
-      if (val != '\t') {
+      if (val != ',') {
         if (val == '\n') {
           str2 = "";
           str1 = "";
@@ -120,30 +91,27 @@ void loop() {
       
     } else {
       if (val == '\n') {
-        T_old = T;
         T = str2.toInt();
         A = str1.toInt();
 
         if (A > 40) {
           A = 40;
-        } else if (A < 5) {
+        } else if (A < 1) {
           str2 = "";
           str1 = "";
           flag = 0;
 
+          osc_right.SetA(0);
+          osc_left.SetA(0);
+          osc_middle.SetA(0);
           return;
         }
 
-        
-        if (T > T_old * 4) {
-          T = T_old;
-        } else if (T < 500) {
-          T = 500;
+        if (T > 10000) {
+          T = 10000;
+        } else if (T < 250) {
+          T = 250;
         }
-
-
-        //mySerial.print(str1+" ");
-        //mySerial.println(str2);
 
         A_aux = A + ajuste_direccion;
         if (A_aux < 0) {
@@ -153,6 +121,7 @@ void loop() {
         }
         osc_right.SetA(A_aux);
         osc_left.SetA(A);
+        osc_middle.SetA(middle_amplitude);
 
         osc_middle.SetT(T);
         osc_right.SetT(T);
