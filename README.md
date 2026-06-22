@@ -19,7 +19,7 @@ This repository is associated to the following pulication:
       `src`
       `lib`
   - Runs with: `Makefile`
-    *Warning: This software only works in a Real-time operative system, it was designed and tested in Debian 9 with kernel 4.9.0-4 and Preempt-RT* 
+    *Warning: This software only works in a Real-time operative system, it was designed and tested in Debian 9 with kernel 4.9.0-6 and Preempt-RT* 
   - Visualization utils:
       `plot_controller.py`
       `plot_record_video.py`
