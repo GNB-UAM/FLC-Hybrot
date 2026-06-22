@@ -90,8 +90,7 @@ int main (int argc, char *argv[]) {
 	// General variables
 	int i;
 
-	char next_char = '0';
-	char last_char = '0';
+	unsigned char next_char = '0';
 	int drift_counter = 0;
 
 	char serial_port_name[30];
@@ -104,7 +103,7 @@ int main (int argc, char *argv[]) {
 	int freq = 10000;
 	int period;
 	int duration = 120;
-	int observation_time = 20;
+	int observation_time = 10;
 	double max_current = 0.01;
 	double th_lo_per = 0.1;
 	double th_up_per = 0.7;
@@ -121,6 +120,7 @@ int main (int argc, char *argv[]) {
 	int light_threshold = 900; // parameter for photodiode 
 	double light_gain = -1; // light gain factor for direct conversion to current
 
+	int light_value;
 	int ret;
 
 	while ((ret = getopt_long(argc, argv, "E:f:t:L:U:c:S:D:i:o:p:O:l:g:h", main_opts, NULL)) >= 0) {
@@ -255,10 +255,14 @@ int main (int argc, char *argv[]) {
 		params->serial_stream->SetBaudRate(BaudRate::BAUD_19200);
 		params->serial_stream->SetCharacterSize(CharacterSize::CHAR_SIZE_8);
 	}
+	else
+		perror("Serial stream closed\n");
+
 
 	// Stop robot for calibration
 	// The robot will start when receiving the first cycle
-	*(params->serial_stream) << '0,0' << std::endl;
+	*(params->serial_stream) << "0,0\n";
+
 
 	printf("Start observation (%ds) and interaction (%ds)\n", observation_time/freq, duration/freq);
 
@@ -313,7 +317,7 @@ int main (int argc, char *argv[]) {
 	update_amplitude(params);
 
 	//TODO Empty serial buffer
-	*(params->serial_stream) << '0,0' << std::endl;
+	*(params->serial_stream) << "0,0\n";
 
 
 	/****************************************************
@@ -332,11 +336,9 @@ int main (int argc, char *argv[]) {
 
         /* Read from serial */
 		if (params->serial_stream->IsDataAvailable()) {
-			last_char = next_char;
 			*(params->serial_stream) >> next_char;
-			if (next_char != '3' && next_char != '1') {
-				next_char = last_char;
-			}
+			light_value =  (int) next_char;
+			printf("Light value int %d\n", light_value);
 		}
 
 
