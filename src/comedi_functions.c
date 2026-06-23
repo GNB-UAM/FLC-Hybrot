@@ -28,8 +28,15 @@ int daq_open_device (void ** device) {
 	dsc = *device;*/
 
 	if (READ_FROM_FILE == 1) {
-        //f = fopen("data/2018y_10m_8d/18h_33m_12s_data.txt", "r");
-        f = fopen("../sesiones_velocidad/sub10_2.txt", "r");
+        f = fopen("./offline_data/intervals_data.txt", "r");
+        /*f = fopen("data/2026y_6m_22d/17h_11m_27s.txt", "r");
+*/
+        if (!f)
+        {
+        	perror("READ FROM FILE activated and file not found");
+        	return ERR;
+		}
+
 		char buf[999];
 		fgets(buf, sizeof(char) * 200, f);
 	}
