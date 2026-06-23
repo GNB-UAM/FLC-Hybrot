@@ -44,7 +44,7 @@ def plot_single(filename):
 def plot_invariant(filename):
 	start = 10000
 	end = -1
-	dataset = pd.read_csv(filename, delimiter=' ', header=2)
+	dataset = pd.read_csv(filename, delimiter=' ', header=3)
 	data = dataset.values
 	i = [x / 1000000 for x in data[start:end,0]] # s
 	c = data[start:end,1]
