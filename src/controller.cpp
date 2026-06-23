@@ -77,6 +77,8 @@ int main (int argc, char *argv[]) {
 	Params * params;
 	SerialStream serial_stream;
 
+	int counter = 0;
+
 	// DAQ variables
 	void * dsc = NULL;
 	Daq_session * session = NULL;
@@ -258,13 +260,8 @@ int main (int argc, char *argv[]) {
 	else
 		perror("Serial stream closed\n");
 
-	if(READ_FROM_FILE)
-	{
-		printf("Warning: Getting data from file\n");	
-	}
-
-	printf("Channel/Column for PD intervals: %d", params->channels[INV_PD]);
-	printf("Channel/Column for LP intervals: %d", params->channels[INV_LP]);
+	printf("Channel/Column for PD intervals: %d\n", in_channels[INV_PD]);
+	printf("Channel/Column for LP intervals: %d\n", in_channels[INV_LP]);
 
 
 	// Stop robot for calibration
@@ -345,7 +342,9 @@ int main (int argc, char *argv[]) {
 		if (params->serial_stream->IsDataAvailable()) {
 			*(params->serial_stream) >> next_char;
 			light_value =  (int) next_char;
-			/*printf("Light value %d\n", light_value);*/
+			printf("Light value %d\n", light_value);
+			counter++;
+			printf("Serial counter %d\n", counter);
 		}
 
 
@@ -384,8 +383,8 @@ int main (int argc, char *argv[]) {
 
         /* Stimulation */
         if (light_value < light_threshold) {
-/*        	printf("light_value and light threshold: %d %d\n",light_value,light_threshold );
-*/			target_current = max_current;
+        	// printf("light_value and light threshold: %d %d\n",light_value,light_threshold );
+			target_current = max_current;
 		} else {
 			target_current = 0;
 		}
@@ -407,6 +406,9 @@ int main (int argc, char *argv[]) {
 	}
 
 
+    // Reset Arduino
+	*(params->serial_stream) << "0,0\n";
+
 
 	/****************************************************
     Write to file
@@ -416,8 +418,6 @@ int main (int argc, char *argv[]) {
     printf("Data saved!\n");
 
 
-    // Reset Arduino
-	*(params->serial_stream) << "0,0\n";
 
 	/****************************************************
     Clean up and finish
