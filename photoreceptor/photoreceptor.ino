@@ -35,16 +35,12 @@ void setup() {
   osc_right.SetO(10);
   osc_left.SetO(-5);
 
-  // Mantener parado 3 segundos para comprobar posicion patas
-  while(millis() < 3000) {
+  // Mantener parado 2 segundos para comprobar posicion patas
+  while(millis() < 2000) {
     osc_middle.refresh();
     osc_right.refresh();
     osc_left.refresh();
   }
-
-  osc_middle.SetA(middle_amplitude);
-  osc_right.SetA(A + ajuste_direccion);
-  osc_left.SetA(A);
 
   osc_middle.SetT(T); // Set the period of work
   osc_right.SetT(T);
@@ -62,6 +58,8 @@ void setup() {
   osc_right.SetPh( DEG2RAD( 0 )); //Grande 180
 }
 
+void(* resetFunc) (void) = 0; //declare reset function @ address 0
+
 int lastTime = 0;
 void loop() {
   osc_middle.refresh();
@@ -72,67 +70,43 @@ void loop() {
   if(millis() > lastTime+100) {
     Serial.write(reading); // Send as a single byte 0-255
     lastTime = millis();
+    digitalWrite(13,LOW); // DEBUG LED OFF
   }
 
-  if (Serial.available() >= 1) {
-    val = Serial.read();
-
-    if (flag == 0) {
-      if (val != ',') {
-        if (val == '\n') {
-          str2 = "";
-          str1 = "";
-        } else {
-          str1 += val;
-        }
-      } else {
-        flag = 1;
+  if (Serial.available() > 0) {
+    digitalWrite(13,HIGH); // DEBUG LED ON
+    String line = Serial.readStringUntil('\n');
+    int result = sscanf(line.c_str(), "%d,%d", &T, &A);
+    if (result == 2) {
+      if (A > 40) {
+        A = 40;
+      } else if (A < 1) {
+        resetFunc(); // Reset board
+        osc_right.SetA(0);
+        osc_left.SetA(0);
+        osc_middle.SetA(0);
+        return;
       }
-      
-    } else {
-      if (val == '\n') {
-        T = str2.toInt();
-        A = str1.toInt();
 
-        if (A > 40) {
-          A = 40;
-        } else if (A < 1) {
-          str2 = "";
-          str1 = "";
-          flag = 0;
-
-          osc_right.SetA(0);
-          osc_left.SetA(0);
-          osc_middle.SetA(0);
-          return;
-        }
-
-        if (T > 10000) {
-          T = 10000;
-        } else if (T < 250) {
-          T = 250;
-        }
-
-        A_aux = A + ajuste_direccion;
-        if (A_aux < 0) {
-           A_aux = 0;
-        } else if (A_aux > 40) {
-          A_aux = 40;
-        }
-        osc_right.SetA(A_aux);
-        osc_left.SetA(A);
-        osc_middle.SetA(middle_amplitude);
-
-        osc_middle.SetT(T);
-        osc_right.SetT(T);
-        osc_left.SetT(T);
-
-        str2 = "";
-        str1 = "";
-        flag = 0;
-      } else {
-        str2 += val;
+      if (T > 10000) {
+        T = 10000;
+      } else if (T < 250) {
+        T = 250;
       }
+
+      A_aux = A + ajuste_direccion;
+      if (A_aux < 0) {
+          A_aux = 0;
+      } else if (A_aux > 40) {
+        A_aux = 40;
+      }
+      osc_right.SetA(A_aux);
+      osc_left.SetA(A);
+      osc_middle.SetA(middle_amplitude);
+
+      osc_middle.SetT(T);
+      osc_right.SetT(T);
+      osc_left.SetT(T);
     }
   }
 
