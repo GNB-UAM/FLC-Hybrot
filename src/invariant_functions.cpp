@@ -334,6 +334,8 @@ void write_to_file_invariant (Params * params, int duration, char * filename) {
     FILE * f = fopen(filename, "w");
 
     fprintf(f, "1\nth_lo_per %.2f th_up_per %.2f\n", params->channels[INV_PD].th_lo_per, params->channels[INV_LP].th_up_per);
+	
+	fprintf(f, "Time Current Inv_PD_V INV_LP_V INV_PD_V INV_PD_EVENT INV_LP_EVENT INV_LP_PERIOD_ALL");
 
 	for (i = 0; i < duration; i++) {
 		fprintf(f, "%.0f %f %f %f %.0f %.0f %.0f %.0f %f %f\n", data[REALTIME][i], data[CURRENT][i], data[INV_PD_V][i], data[INV_LP_V][i], data[INV_PD_EVENT][i], data[INV_PD_END_EVENT][i], data[INV_LP_EVENT][i], data[INV_LP_END_EVENT][i], data[INV_LP_PERIOD_ALL][i], data[INV_SECOND_ALL][i]);
