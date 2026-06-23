@@ -28,9 +28,9 @@ int daq_open_device (void ** device) {
 	dsc = *device;*/
 
 	if (READ_FROM_FILE == 1) {
-        f = fopen("./offline_data/intervals_data.txt", "r");
-        /*f = fopen("data/2026y_6m_22d/17h_11m_27s.txt", "r");
-*/
+		//f = fopen("data/2026y_6m_22d/17h_11m_27s.txt", "r");
+        f = fopen("recordings/experiment1_lppd_signal.txt", "r");
+
         if (!f)
         {
         	perror("READ FROM FILE activated and file not found");
