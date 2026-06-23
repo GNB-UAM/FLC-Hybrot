@@ -258,6 +258,14 @@ int main (int argc, char *argv[]) {
 	else
 		perror("Serial stream closed\n");
 
+	if(READ_FROM_FILE)
+	{
+		printf("Warning: Getting data from file\n");	
+	}
+
+	printf("Channel/Column for PD intervals: %d", params->channels[INV_PD]);
+	printf("Channel/Column for LP intervals: %d", params->channels[INV_LP]);
+
 
 	// Stop robot for calibration
 	// The robot will start when receiving the first cycle
