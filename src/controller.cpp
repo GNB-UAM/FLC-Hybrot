@@ -77,8 +77,6 @@ int main (int argc, char *argv[]) {
 	Params * params;
 	SerialStream serial_stream;
 
-	int counter = 0;
-
 	// DAQ variables
 	void * dsc = NULL;
 	Daq_session * session = NULL;
@@ -346,8 +344,6 @@ int main (int argc, char *argv[]) {
 			*(params->serial_stream) >> next_char;
 			light_value =  (int) next_char;
 			printf("Light value %d\n", light_value);
-			counter++;
-			printf("Serial counter %d\n", counter);
 		}
 
 
