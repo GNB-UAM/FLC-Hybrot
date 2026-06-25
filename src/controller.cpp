@@ -100,7 +100,7 @@ int main (int argc, char *argv[]) {
 	strcpy(serial_port_name, "/dev/ttyUSB0");
 
 
-	int experiment_type = 0;
+	int experiment_type = 1; // default Invariants
 	int stimulation_type = 0;
 	int freq = 10000;
 	int period;
@@ -110,6 +110,7 @@ int main (int argc, char *argv[]) {
 	double th_lo_per = 0.1;
 	double th_up_per = 0.7;
 	double output_factor = 10;
+	float current_factor = 1;
 
 	int n_out_chan = 0;
 	int n_in_chan = 0;
@@ -125,7 +126,7 @@ int main (int argc, char *argv[]) {
 	int light_value;
 	int ret;
 
-	while ((ret = getopt_long(argc, argv, "E:f:t:L:U:c:S:D:i:o:p:O:l:g:h", main_opts, NULL)) >= 0) {
+	while ((ret = getopt_long(argc, argv, "E:f:t:L:U:c:S:D:i:o:p:O:F:l:g:h", main_opts, NULL)) >= 0) {
 		switch (ret) {
 			case 'E':
 				experiment_type = atoi(optarg);
@@ -163,6 +164,8 @@ int main (int argc, char *argv[]) {
 				break;
 			case 'O':
 				output_factor = atof(optarg);
+			case 'F':
+				current_factor = atof(optarg);
 				break;
 			case 'l':
 				light_threshold = atoi(optarg);
@@ -386,10 +389,10 @@ int main (int argc, char *argv[]) {
         	// printf("light_value and light threshold: %d %d\n",light_value,light_threshold );
 			target_current = max_current;
 		} else {
-			target_current = 0;
+			target_current = 0.0;
 		}
 
-        select_stimulus(params, output_values, target_current);
+        select_stimulus(params, output_values, target_current, current_factor);
 
    		/* Write to DAQ */
         if (daq_write(session, n_out_chan, out_channels, output_values) != OK) {
