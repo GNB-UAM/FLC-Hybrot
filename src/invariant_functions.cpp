@@ -7,11 +7,11 @@ using namespace LibSerial;
 #define MAX_AMPLITUDE 40
 #define MIN_AMPLITUDE 6
 
-#define USE_INTERVAL 0 // 0 = LPPD interval; 1 = PD burst
+#define USE_INTERVAL 0// 0 = LPPD interval; 1 = PD burst
 
-#define NORM_MIN 994.8
-#define NORM_MAX 2217.8
-#define SLOPE -0.035
+#define NORM_MIN 250//50 burst values//250.0 interval values// 994.8 old values
+#define NORM_MAX 2500//350 // 2500.0// 2217.8
+#define SLOPE -0.0015//-0.0035
 
 int init_params_invariant (Params ** params, int duration, SerialStream * serial_stream, double th_lo_per, double th_up_per) {
 	*params = (Params *) malloc (sizeof(Params));
@@ -241,15 +241,15 @@ void burst_detection_invariant (Params * params, double * input_values, int i) {
 				if (size_period > 0 && data[INV_ARRAYS_SIZES][INV_SIZE_LPPD_INTERVAL] > 0) {
 					double norm_var1 = data[INV_LP_PERIOD_TIMES][size_period] * TEMPORAL_FACTOR;
 					double norm_var2 = (((data[INV_LPPD_INTERVAL][size_lppd_interval]) - NORM_MIN) / (NORM_MAX-NORM_MIN)) * (MAX_AMPLITUDE - MIN_AMPLITUDE) + MIN_AMPLITUDE;
-					norm_var2 *= TEMPORAL_FACTOR;
+					norm_var2 *= TEMPORAL_FACTOR;// OJO QUITAR
 
-					sprintf(buf, "%.0f,%.0f", norm_var1, abs(norm_var2));
+					sprintf(buf, "%.0f,%.0f", abs(norm_var1), abs(norm_var2));
 					//printf("%f %f %f %d %s\n", data[INV_LPPD_INTERVAL][size_lppd_interval], NORM_MIN, NORM_MAX, MAX_AMPLITUDE, buf);
 					if (norm_var1 < MIN_PERIOD || norm_var2 > MAX_AMPLITUDE) {
 						printf("%s\n", buf);
 					}
 
-					printf("Writing %s to serial\n",buf);
+					// printf("Writing %s to serial\n",buf);
 					*(params->serial_stream) << buf << std::endl;
 				}
 			} else if (USE_INTERVAL == 1) {
@@ -259,11 +259,11 @@ void burst_detection_invariant (Params * params, double * input_values, int i) {
 					double norm_var2 = (((data[INV_PD_BURST][size_pd_burst]) - NORM_MIN) / (NORM_MAX-NORM_MIN)) * (MAX_AMPLITUDE - MIN_AMPLITUDE) + MIN_AMPLITUDE;
 					norm_var2 *= TEMPORAL_FACTOR;
 
-					sprintf(buf, "%.0f,%.0f", norm_var1, abs(norm_var2));
+					sprintf(buf, "%.0f,%.0f", abs(norm_var1), abs(norm_var2));
 					if (norm_var1 < MIN_PERIOD || norm_var2 > MAX_AMPLITUDE) {
 						printf("%s\n", buf);
 					}
-					printf("Writing %s to serial\n",buf);
+					// printf("Writing %s to serial\n",buf);
 					
 					*(params->serial_stream) << buf << std::endl;
 				}
