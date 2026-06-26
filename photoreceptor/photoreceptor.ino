@@ -1,10 +1,10 @@
 #include "Oscillator.h"
 #include <Servo.h>
 
-int middle_amplitude = 10; // Middle motor needs a small amplitude (5-15)
+int middle_amplitude = 15; // Middle motor needs a small amplitude (5-15)
 
-unsigned int A = 20; // Amplitude (higher -> longer steps) set 10-40
-unsigned int T = 1500;//, T_old; // Period (lower -> faster moves)
+int A = 20; // Amplitude (higher -> longer steps) set 10-40
+int T = 1500;//, T_old; // Period (lower -> faster moves)
 Oscillator osc_middle, osc_right, osc_left;
 
 int lightPin = 1;

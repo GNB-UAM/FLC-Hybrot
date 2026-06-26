@@ -2,7 +2,7 @@
 #include <comedilib.h>
 #include <string.h>
 
-#define READ_FROM_FILE 1
+#define READ_FROM_FILE 0
 
 struct _Daq_session{
 	comedi_t * device;
