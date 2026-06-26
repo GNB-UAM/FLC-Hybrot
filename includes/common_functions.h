@@ -17,4 +17,4 @@ void burst_detection (Params * params, double * input_values, int i);
 
 void select_stimulus(Params * params, double * output_values, double target_current, float current_factor);
 
-void write_to_file (Params * params, int duration);
+char * write_to_file (Params * params, int duration);

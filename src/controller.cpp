@@ -424,7 +424,7 @@ int main (int argc, char *argv[]) {
     Write to file
     ****************************************************/
     printf("Ended experiment. Saving data to file...\n");
-    write_to_file(params, duration);
+    char * outname = write_to_file(params, duration);
     printf("Data saved!\n");
 
 
@@ -453,5 +453,10 @@ int main (int argc, char *argv[]) {
     free(out_channels);
     free_params(&params);
 
+    
+    printf("Plotting result with python\n");
+    char cmd[256];
+    snprintf(cmd, sizeof(cmd), "python plot_controller.py %s", outname);
+    system(cmd);
     return OK;
 }

@@ -90,7 +90,7 @@ void select_stimulus(Params * params, double * output_values, double target_curr
 }
 
 
-void write_to_file (Params * params, int duration) {
+char* write_to_file (Params * params, int duration) {
 	time_t t;
     struct tm tm;
     char * path = NULL;
@@ -129,5 +129,5 @@ void write_to_file (Params * params, int duration) {
 
 	free(path);
 	free(hour);
-	free(filename);
+	return filename;
 }
