@@ -196,6 +196,7 @@ void burst_detection_invariant (Params * params, double * input_values, int i) {
 		}
 		mean_3 /= VFACTOR; //Convert to mV
 
+		// if ((mean_1 < mean_2) && mean_2 > mean_3) {
 		if ((mean_1 - mean_2 < SLOPE) && mean_2 > mean_3) {
 			last_spike_pd_t = i-15;
 		}
