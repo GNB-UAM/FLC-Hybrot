@@ -1,0 +1,373 @@
+#include "../includes/time_functions.h"
+#include "../includes/common_functions.h"
+#include "../includes/device_functions.h"
+
+struct option main_opts[] = {
+	{"experiment_type", required_argument, NULL, 'E'},
+	{"frequency", required_argument, NULL, 'f'},
+	{"time", required_argument, NULL, 't'},
+	{"current", required_argument, NULL, 'c'},
+	{"stimulation_type", required_argument, NULL, 'S'},
+	{"pulse_duration", required_argument, NULL, 'D'},
+	{"lower_threshold", required_argument, NULL, 'L'},
+	{"upper_threshold", required_argument, NULL, 'U'},
+	{"input_channels", required_argument, NULL, 'i'},
+	{"output_channels", required_argument, NULL, 'o'},
+	{"serial_port", required_argument, NULL, 'p'},
+	{"output_factor", required_argument, NULL, 'O'},
+	{"light_threshold", required_argument, NULL, 'l'},
+	{"light_gain", required_argument, NULL, 'g'},
+	{"help", no_argument, NULL, 'h'},
+	{0},
+};
+
+void do_print_usage ()
+{
+	printf("usage:\tcontroller [OPTS]\n");
+	printf("\tOPTS:\t -E, --experiment_type: 0 for single neuron, 1 for invariant\n");
+	printf("\t\t -f, --frequency: sample frequency (in Hz)\n");
+	printf("\t\t -t, --time: experiment duration (in s)\n");
+	printf("\t\t -L, --lower_threshold: lower threshold for burst detection (percentage)\n");
+	printf("\t\t -U, --upper_threshold: upper threshold for burst detection (percentage)\n");
+	printf("\t\t -c, --current: value of the current to inject (in nA)\n");
+	printf("\t\t -S, --stimulation_type: 0 for continuous current, 1 for fixed pulses, 2 for variable pulses\n");
+	printf("\t\t -D, --pulse_duration: if using stimulation by pulses, duration of the pulses (in s)\n");
+	printf("\t\t -i, --input_channels: input channels, separated by commas (ej: 0,2,3,7)\n");
+	printf("\t\t -o, --output_channels: output channels, separated by commas (ej: 0,2,3,7)\n");
+	printf("\t\t -p, --serial_port: serial port\n");
+	printf("\t\t -O, --output_factor: output factor\n");
+	printf("\t\t -l, --light_threshold: light threshold\n");
+	printf("\t\t -g, --light_gain: light gain\n");
+	printf("\t\t -h, --help: print this help\n");
+}
+
+void parse_channels (char * str, int ** channels, int * n_chan) {
+	int n_chan_aux = 0;
+	int chan_aux[32];
+	char * token = NULL;
+	int i;
+
+	token = strtok(str, ",");
+	
+
+	while (token != NULL) {
+		chan_aux[n_chan_aux] = atoi(token);
+		n_chan_aux++;
+
+		token = strtok(NULL, ",");
+	}
+
+	*channels = (int *) malloc (sizeof(int) * n_chan_aux);
+	*n_chan = n_chan_aux;
+
+	for (i = 0; i < n_chan_aux; i++) {
+		(*channels)[i] = chan_aux[i];
+	}
+
+	return;
+}
+
+
+
+
+
+int main (int argc, char *argv[]) {
+	Params * params;
+	SerialStream serial_stream;
+
+	// DAQ variables
+	void * dsc = NULL;
+	Daq_session * session = NULL;
+	double * input_values = NULL;
+	double * output_values = NULL;
+
+	// Time variables
+	struct timespec ts_target, ts_start, ts_iter, ts_result;
+	double t_elapsed; /* In microseconds */
+
+	// General variables
+	int i;
+
+	char next_char = '0';
+	int drift_counter = 0;
+
+	char serial_port_name[30];
+	memset(serial_port_name, '\0', sizeof(serial_port_name));
+	strcpy(serial_port_name, "/dev/ttyUSB0");
+    
+    char * filename;
+	char buffer[250];
+    filename = buffer;
+
+	int experiment_type = 1; // default Invariants
+	int stimulation_type = 0;
+	int freq = 10000;
+	int period;
+	int duration = 120;
+	int observation_time = 10;
+	double max_current = 0.01;
+	double th_lo_per = 0.1;
+	double th_up_per = 0.7;
+	double output_factor = 1;
+	float current_factor = 1;
+
+	int n_out_chan = 0;
+	int n_in_chan = 0;
+	int * out_channels = NULL;
+	int * in_channels = NULL;
+
+	int pulse_duration = 1;
+	double target_current = 0;
+
+	int light_threshold = 50; // parameter for photodiode 
+	double light_gain = -1; // light gain factor for direct conversion to current
+
+	int light_value;
+	int ret;
+
+	while ((ret = getopt_long(argc, argv, "E:f:t:L:U:c:S:D:i:o:p:O:F:l:g:d:h", main_opts, NULL)) >= 0) {
+		switch (ret) {
+			case 'E':
+				experiment_type = atoi(optarg);
+				break;
+			case 'f':
+				freq = atoi(optarg);
+				break;
+			case 't':
+				duration = atoi(optarg);
+				break;
+			case 'L':
+				th_lo_per = atof(optarg);
+				break;
+			case 'U':
+				th_up_per = atof(optarg);
+				break;
+			case 'c':
+				max_current = atof(optarg);
+				break;
+			case 'S':
+				stimulation_type = atoi(optarg);
+				break;
+			case 'D':
+				pulse_duration = atoi(optarg);
+				break;
+			case 'i':
+				parse_channels(optarg, &(in_channels), &(n_in_chan));
+				break;
+			case 'o':
+				parse_channels(optarg, &(out_channels), &(n_out_chan));
+				break;
+			case 'p':
+				memset(serial_port_name, '\0', sizeof(serial_port_name));
+				strcpy(serial_port_name, optarg);
+				break;
+			case 'O':
+				output_factor = atof(optarg);
+			case 'F':
+				current_factor = atof(optarg);
+				break;
+			case 'l':
+				light_threshold = atoi(optarg);
+				break;
+			case 'g':
+				light_gain = atof(optarg);
+				break;
+            case 'd':
+                strncpy(filename, optarg, sizeof(buffer) - 1);
+                break;
+			case 'h':
+			default:
+				do_print_usage();
+				return 0;
+		}
+	}
+
+	// Convert from seconds to points
+	duration = duration * freq;
+	pulse_duration = pulse_duration * freq;
+	observation_time = observation_time * freq;
+	period = (1.0 / freq) * NSEC_PER_SEC;
+
+	// Apply output_factor to the current
+	max_current = max_current / output_factor;
+
+	if (n_out_chan < 1) {
+		printf("Wrong number of output channels.\n");
+		free(in_channels);
+    	free(out_channels);
+		return ERR;
+	}
+
+	// Init
+	if (init_params(&params, &serial_stream, experiment_type, stimulation_type, n_in_chan, duration, freq, max_current, th_lo_per, th_up_per) != OK) {
+		printf("Wrong number of input channels.\n");
+		free(in_channels);
+    	free(out_channels);
+		return ERR;
+	}
+
+    printf("File received with name: %s\n", filename);
+
+	if(light_gain < 0)
+	{
+		std::cout << "Light gain ignored" << std::endl;
+		std::cout << "Light threshold:" << light_threshold << std::endl;
+	}
+	else
+	{
+		std::cout << "Using light directly to current with gain " << light_gain << std::endl;
+	}
+
+
+    	/****************************************************
+    Open FILE
+    ****************************************************/
+    if (daq_open_device((void **) &filename) != OK) {
+        fprintf(stderr, "RT_THREAD: error opening device.\n");
+
+        return ERR;
+    }
+
+    input_values = (double *) malloc (sizeof(double) * n_in_chan);
+    output_values = (double *) malloc (sizeof(double) * n_out_chan);
+
+
+    for (i = 0; i < n_out_chan; i++) {
+        input_values[i] = 0.0;
+    }
+    for (i = 0; i < n_out_chan; i++) {
+        output_values[i] = 0.0;
+    }
+
+	printf("Channel/Column for PD intervals: %d\n", in_channels[INV_PD]);
+	printf("Channel/Column for LP intervals: %d\n", in_channels[INV_LP]);
+
+
+	printf("Start observation (%ds) and interaction (%ds)\n", observation_time/freq, duration/freq);
+
+	/****************************************************
+    Observation
+    ****************************************************/
+    clock_gettime(CLOCK_MONOTONIC, &ts_target);
+    ts_assign(&ts_start,  ts_target);
+    ts_add_time(&ts_target, 0, period);
+
+
+	for (i = 0; i < observation_time; i++) {
+		/* Sleep */
+		clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &ts_target, NULL);
+
+		/* Wake up and get times */
+        clock_gettime(CLOCK_MONOTONIC, &ts_iter);
+        ts_substraction(&ts_start, &ts_iter, &ts_result);
+        t_elapsed = (ts_result.tv_sec * NSEC_PER_SEC + ts_result.tv_nsec) * 0.001;
+
+        ts_add_time(&ts_target, 0, period);
+
+        // printf("Trying to read from file\n");
+        /* Read from DAQ */
+		if (daq_read(session, n_in_chan, in_channels, input_values) != 0) {
+
+            daq_close_device ((void**) &dsc);
+		    free(input_values);
+		    free(output_values);
+
+            return ERR;
+        }
+        // printf("finished reading \n");
+        /* Update min and max in the temporal window */
+        update_min_max_window_first(params, input_values);
+	}
+
+	printf("End calibration\n");
+
+
+	/* Update amplitude parameters */
+	update_amplitude(params);
+
+
+	/****************************************************
+    Interaction
+    ****************************************************/
+    for (i = 0, drift_counter = 0; i < duration; i++, drift_counter++) {
+		/* Sleep */
+		clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &ts_target, NULL);
+
+		/* Wake up and get times */
+        clock_gettime(CLOCK_MONOTONIC, &ts_iter);
+        ts_substraction(&ts_start, &ts_iter, &ts_result);
+        t_elapsed = (ts_result.tv_sec * NSEC_PER_SEC + ts_result.tv_nsec) * 0.001;
+
+        ts_add_time(&ts_target, 0, period);
+
+		/* Read from DAQ */
+		if (daq_read(session, n_in_chan, in_channels, input_values) != 0) {
+            for (i = 0; i < n_out_chan; i++) {
+                output_values[i] = 0.0;
+            }
+
+            free(session);
+            daq_close_device ((void**) &dsc);
+		    free(input_values);
+		    free(output_values);
+
+            return ERR;
+        }
+        /*
+        // Drift compensation
+       update_min_max_window(params, input_values);
+
+        //if (drift_counter > 0.5 * freq) {
+        if (drift_counter > 2.5 * freq) {
+        	update_amplitude(params);
+			drift_counter = 0;
+        }*/
+ 
+        /* Burst detection and robot control */
+        burst_detection(params, input_values, i);
+
+
+        /* Stimulation */
+        if (light_value < light_threshold) {
+        	// printf("light_value and light threshold: %d %d\n",light_value,light_threshold );
+			target_current = max_current;
+		} else {
+			target_current = 0.0;
+		}
+
+        select_stimulus(params, output_values, target_current, current_factor);
+
+
+	    /* Save time and current */
+	    params->data[CURRENT][i] = output_values[0] * output_factor;
+        params->data[REALTIME][i] = t_elapsed;
+	}
+
+
+	/****************************************************
+    Write to file
+    ****************************************************/
+    printf("Ended experiment. Saving data to file...\n");
+    char * outname = write_to_file(params, duration);
+    printf("Data saved!\n");
+
+
+	/****************************************************
+    Clean up and finish
+    ****************************************************/
+
+    free(session);
+    daq_close_device ((void**) &dsc);
+    free(input_values);
+    free(output_values);
+
+    free(in_channels);
+    free(out_channels);
+    free_params(&params);
+
+    printf("Plotting result with python");
+    char cmd[256];
+    snprintf(cmd, sizeof(cmd), "python plot_controller.py %s", outname);
+    system(cmd);
+    return OK;
+}

@@ -25,5 +25,14 @@ obj/time_functions.o: src/time_functions.c includes/time_functions.h
 obj/device_functions.o: src/comedi_functions.c includes/device_functions.h
 	$(CC) $(CCFLAGS) -c src/comedi_functions.c -o obj/device_functions.o -lm -lcomedi
 
+checker: obj/intervals_checker.o obj/file_functions.o obj/time_functions.o obj/common_functions.o obj/invariant_functions.o obj/single_functions.o obj/stimulation_functions.o
+	g++ $(CCFLAGS) -o checker obj/intervals_checker.o obj/file_functions.o obj/time_functions.o obj/common_functions.o obj/invariant_functions.o obj/single_functions.o obj/stimulation_functions.o -lm -lserial -lpthread
+
+obj/intervals_checker.o: src/intervals_checker.cpp obj/file_functions.o obj/time_functions.o obj/common_functions.o
+	g++ $(CCFLAGS) -Iserial -c src/intervals_checker.cpp -o obj/intervals_checker.o -lm
+
+obj/file_functions.o: src/file_functions.cpp includes/device_functions.h
+	g++ $(CCFLAGS) -Iserial -c src/file_functions.cpp -o obj/file_functions.o -lm
+
 clean:
 	rm -f controller obj/*.o
