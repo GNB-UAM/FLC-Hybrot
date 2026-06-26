@@ -36,9 +36,16 @@ int daq_open_device (void ** device) {
         	perror("READ FROM FILE activated and file not found");
         	return ERR;
 		}
-
+	
+		//Ignore headers
+		printf("ignoring headers");
 		char buf[999];
 		fgets(buf, sizeof(char) * 200, f);
+		printf("%s\n", buf);
+		fgets(buf, sizeof(char) * 200, f);
+		printf("%s\n", buf);
+		fgets(buf, sizeof(char) * 200, f);
+		printf("%s\n", buf);
 	}
 
 	dsc = comedi_open("/dev/comedi0");
