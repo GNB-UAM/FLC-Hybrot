@@ -90,7 +90,7 @@ int main (int argc, char *argv[]) {
 	// General variables
 	int i;
 
-	unsigned char next_char = '0';
+	char next_char = '0';
 	int drift_counter = 0;
 
 	char serial_port_name[30];
@@ -107,7 +107,7 @@ int main (int argc, char *argv[]) {
 	double max_current = 0.01;
 	double th_lo_per = 0.1;
 	double th_up_per = 0.7;
-	double output_factor = 10;
+	double output_factor = 1;
 	float current_factor = 1;
 
 	int n_out_chan = 0;
@@ -257,6 +257,7 @@ int main (int argc, char *argv[]) {
 		params->serial_stream->Open(serial_port_name);
 		params->serial_stream->SetBaudRate(BaudRate::BAUD_19200);
 		params->serial_stream->SetCharacterSize(CharacterSize::CHAR_SIZE_8);
+		params->serial_stream->SetStopBits(StopBits::STOP_BITS_1);
 	}
 	else
 		perror("Serial stream closed\n");
@@ -296,7 +297,7 @@ int main (int argc, char *argv[]) {
 		if (daq_read(session, n_in_chan, in_channels, input_values) != 0) {
 
             for (i = 0; i < n_out_chan; i++) {
-                output_values[i] = 0;
+                output_values[i] = 0.0;
             }
 
             if (daq_write(session, n_out_chan, out_channels, output_values) != OK) {
@@ -324,7 +325,6 @@ int main (int argc, char *argv[]) {
 	update_amplitude(params);
 
 
-
 	/****************************************************
     Interaction
     ****************************************************/
@@ -341,8 +341,9 @@ int main (int argc, char *argv[]) {
 
         /* Read from serial */
 		if (params->serial_stream->IsDataAvailable()) {
-			*(params->serial_stream) >> next_char;
-			light_value =  (int) next_char;
+			
+			params->serial_stream->get(next_char);
+			light_value = (unsigned char) next_char;
 			printf("Light value %d\n", light_value);
 		}
 
@@ -366,15 +367,15 @@ int main (int argc, char *argv[]) {
 
             return ERR;
         }
-        
+        /*
         // Drift compensation
-        update_min_max_window(params, input_values);
+       update_min_max_window(params, input_values);
 
         //if (drift_counter > 0.5 * freq) {
         if (drift_counter > 2.5 * freq) {
         	update_amplitude(params);
 			drift_counter = 0;
-        }
+        }*/
  
         /* Burst detection and robot control */
         burst_detection(params, input_values, i);
