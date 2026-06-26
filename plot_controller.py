@@ -44,7 +44,7 @@ def plot_single(filename):
 
 def plot_invariant(filename, th_lo_per, th_up_per):
 	start = 10000
-	end = 50000
+	end = -1
 	dataset = pd.read_csv(filename, delimiter=' ', header=3)
 	data = dataset.values
 	t = np.array([x / 1000000 for x in data[start:end,0]]) # s
@@ -68,11 +68,13 @@ def plot_invariant(filename, th_lo_per, th_up_per):
 	plt.plot(t, v_lp)
 	on_events = t[np.where(e_lp)]
 	off_events = t[np.where(e_lp_end)]
-	plt.plot(on_events, np.ones(on_events.shape)*0.0, '.', markersize=10, color='green')
-	plt.plot(off_events, np.ones(off_events.shape)*0.0, '.', markersize=10, color='red')
+	plt.plot(on_events, np.ones(on_events.shape)*np.max(v_lp), '.', markersize=10, color='green')
+	plt.plot(off_events, np.ones(off_events.shape)*np.max(v_lp), '.', markersize=10, color='red')
 
-	plt.hlines(th_up_per, xmin=t[0], xmax=t[-1], label="th_up_per", linestyles="dashed", color='purple')
-	plt.hlines(np.ones(len(t))*0.4, xmin=t[0], xmax=t[-1], label="th_low_per (fixed)", linestyles="dashed", color='black')
+	th_up = np.min(v_lp) + ((np.max(v_lp)-np.min(v_lp)) * th_up_per)
+	th_lo = np.min(v_lp) + ((np.max(v_lp)-np.min(v_lp)) * np.ones(len(t))*0.4)
+	plt.hlines(th_up, xmin=t[0], xmax=t[-1], label="th_up", linestyles="dashed", color='purple')
+	plt.hlines(th_lo, xmin=t[0], xmax=t[-1], label="th_low (fixed)", linestyles="dashed", color='black')
 	plt.legend()
 	
 	ax2 = plt.subplot(5, 1, 2, sharex=ax1)
@@ -81,12 +83,14 @@ def plot_invariant(filename, th_lo_per, th_up_per):
 
 	on_events = t[np.where(e_pd)]
 	off_events = t[np.where(e_pd_end)]
-	plt.plot(on_events, np.ones(on_events.shape)*0.0, '.', markersize=10, color='green')
-	plt.plot(off_events, np.ones(off_events.shape)*0.0, '.', markersize=10, color='red')
-	plt.hlines(np.ones(len(t))*0.7, xmin=t[0], xmax=t[-1], label="th_up_per", linestyles="dashed", color='black')
-	plt.hlines(th_lo_per, xmin=t[0], xmax=t[-1], label="th_low_per", linestyles="dashed", color='purple')
-	plt.legend()
+	plt.plot(on_events, np.ones(on_events.shape)*np.max(v_pd), '.', markersize=10, color='green')
+	plt.plot(off_events, np.ones(off_events.shape)*np.max(v_pd), '.', markersize=10, color='red')
 
+	th_up = np.min(v_pd) + ((np.max(v_pd)-np.min(v_pd)) * np.ones(len(t))*0.4)
+	th_lo = np.min(v_pd) + ((np.max(v_pd)-np.min(v_pd)) * th_lo_per)
+	plt.hlines(th_up, xmin=t[0], xmax=t[-1], label="th_up_per", linestyles="dashed", color='black')
+	plt.hlines(th_lo, xmin=t[0], xmax=t[-1], label="th_low_per", linestyles="dashed", color='purple')
+	plt.legend()
 
 	ax3 = plt.subplot(5, 1, 3, sharex=ax1)
 	plt.ylabel("Current (nA)")
