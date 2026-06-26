@@ -2,6 +2,7 @@
 
 using namespace LibSerial;
 
+#define VFACTOR 10 //10  /Conversion from DAQ value to mV
 #define TEMPORAL_FACTOR 1
 #define MIN_PERIOD 500
 #define MAX_AMPLITUDE 40
@@ -172,28 +173,33 @@ void burst_detection_invariant (Params * params, double * input_values, int i) {
 		aux_pd = 1;
 	//} else if (data[INV_PD_V][i] > pd->th_up) {
 	//} else if (data[INV_PD_V][i] > pd->th_up && (data[INV_PD_V][i] - data[INV_PD_V][i-1] > (0.6/25))) {
+	//Detect all spikes in PD to keep the last one
 	} else if (i >= 30 && data[INV_PD_V][i] > pd->th_up) {
 		double mean_1 = 0, mean_2 = 0, mean_3 = 0;
 		int j;
 
+		//Mean of 10 first points of the pd
 		for (j=0; j < 10; j++) {
 			mean_1 += data[INV_PD_V][i-j];
 		}
-		mean_1 /= 10;
+		mean_1 /= VFACTOR; //Convert to mV
 
+		//Mean of 10 next points of the pd
 		for (j=10; j < 20; j++) {
 			mean_2 += data[INV_PD_V][i-j];
 		}
-		mean_2 /= 10;
+		mean_2 /= VFACTOR; //Convert to mV
 
+		//Mean of 10 last points of the pd
 		for (j=20; j < 30; j++) {
 			mean_3 += data[INV_PD_V][i-j];
 		}
-		mean_3 /= 10;
+		mean_3 /= VFACTOR; //Convert to mV
 
 		if ((mean_1 - mean_2 < SLOPE) && mean_2 > mean_3) {
 			last_spike_pd_t = i-15;
 		}
+		
 	} else if (data[INV_PD_V][i] < pd->th_lo && pd->flag == 0) {
 		// Fin de la rafaga de la PD, y por tanto puede empezar la LP
 		pd->flag = 1;
