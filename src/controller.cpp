@@ -11,13 +11,15 @@ struct option main_opts[] = {
 	{"current", required_argument, NULL, 'c'},
 	{"stimulation_type", required_argument, NULL, 'S'},
 	{"pulse_duration", required_argument, NULL, 'D'},
-	{"lower_threshold", required_argument, NULL, 'L'},
-	{"upper_threshold", required_argument, NULL, 'U'},
+	{"lower_threshold_lp", required_argument, NULL, 'L'},
+	{"upper_threshold_lp", required_argument, NULL, 'U'},
+	{"lower_threshold_pd", required_argument, NULL, 'l'},
+	{"upper_threshold_pd", required_argument, NULL, 'u'},
 	{"input_channels", required_argument, NULL, 'i'},
 	{"output_channels", required_argument, NULL, 'o'},
-	{"serial_port", required_argument, NULL, 'p'},
+	{"serial_port", required_argument, NULL, 'P'},
 	{"output_factor", required_argument, NULL, 'O'},
-	{"light_threshold", required_argument, NULL, 'l'},
+	{"photodiode_threshold", required_argument, NULL, 'p'},
 	{"light_gain", required_argument, NULL, 'g'},
 	{"help", no_argument, NULL, 'h'},
 	{0},
@@ -105,8 +107,10 @@ int main (int argc, char *argv[]) {
 	int duration = 120;
 	int observation_time = 10;
 	double max_current = 0.01;
-	double th_lo_per = 0.1;
-	double th_up_per = 0.7;
+	double th_lo_per_lp = 0.1;
+	double th_up_per_lp = 0.7;
+	double th_lo_per_pd = 0.1;
+	double th_up_per_pd = 0.7;
 	double output_factor = 1;
 	float current_factor = 1;
 
@@ -124,7 +128,7 @@ int main (int argc, char *argv[]) {
 	int light_value;
 	int ret;
 
-	while ((ret = getopt_long(argc, argv, "E:f:t:L:U:c:S:D:i:o:p:O:F:l:g:h", main_opts, NULL)) >= 0) {
+	while ((ret = getopt_long(argc, argv, "E:f:t:L:U:l:u:c:S:D:i:o:P:O:F:p:g:h", main_opts, NULL)) >= 0) {
 		switch (ret) {
 			case 'E':
 				experiment_type = atoi(optarg);
@@ -136,10 +140,16 @@ int main (int argc, char *argv[]) {
 				duration = atoi(optarg);
 				break;
 			case 'L':
-				th_lo_per = atof(optarg);
+				th_lo_per_lp = atof(optarg);
 				break;
 			case 'U':
-				th_up_per = atof(optarg);
+				th_up_per_lp = atof(optarg);
+				break;
+			case 'l':
+				th_lo_per_pd = atof(optarg);
+				break;
+			case 'u':
+				th_up_per_pd = atof(optarg);
 				break;
 			case 'c':
 				max_current = atof(optarg);
@@ -156,7 +166,7 @@ int main (int argc, char *argv[]) {
 			case 'o':
 				parse_channels(optarg, &(out_channels), &(n_out_chan));
 				break;
-			case 'p':
+			case 'P':
 				memset(serial_port_name, '\0', sizeof(serial_port_name));
 				strcpy(serial_port_name, optarg);
 				break;
@@ -165,7 +175,7 @@ int main (int argc, char *argv[]) {
 			case 'F':
 				current_factor = atof(optarg);
 				break;
-			case 'l':
+			case 'p':
 				light_threshold = atoi(optarg);
 				break;
 			case 'g':
@@ -195,7 +205,7 @@ int main (int argc, char *argv[]) {
 	}
 
 	// Init
-	if (init_params(&params, &serial_stream, experiment_type, stimulation_type, n_in_chan, duration, freq, max_current, th_lo_per, th_up_per) != OK) {
+	if (init_params(&params, &serial_stream, experiment_type, stimulation_type, n_in_chan, duration, freq, max_current, th_lo_per_pd, th_up_per_lp) != OK) {
 		printf("Wrong number of input channels.\n");
 		free(in_channels);
     	free(out_channels);
