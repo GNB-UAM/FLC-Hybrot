@@ -83,14 +83,14 @@ void burst_detection (Params * params, double * input_values, int i) {
 }
 
 
-void select_stimulus(Params * params, double * output_values, double target_current) {
+void select_stimulus(Params * params, double * output_values, double target_current, float current_factor) {
 	if (params->stimulation_type == GRADUAL_CURRENT) {
-		gradual_current(params, output_values, target_current);
+		gradual_current(params, output_values, target_current, current_factor);
 	}
 }
 
 
-void write_to_file (Params * params, int duration) {
+char* write_to_file (Params * params, int duration) {
 	time_t t;
     struct tm tm;
     char * path = NULL;
@@ -129,5 +129,5 @@ void write_to_file (Params * params, int duration) {
 
 	free(path);
 	free(hour);
-	free(filename);
+	return filename;
 }

@@ -2,7 +2,7 @@
 #include <comedilib.h>
 #include <string.h>
 
-#define READ_FROM_FILE 1
+#define READ_FROM_FILE 0
 
 struct _Daq_session{
 	comedi_t * device;
@@ -28,17 +28,24 @@ int daq_open_device (void ** device) {
 	dsc = *device;*/
 
 	if (READ_FROM_FILE == 1) {
-        f = fopen("./offline_data/intervals_data.txt", "r");
-        /*f = fopen("data/2026y_6m_22d/17h_11m_27s.txt", "r");
-*/
+		//f = fopen("data/2026y_6m_22d/17h_11m_27s.txt", "r");
+        f = fopen("recordings/experiment1_lppd_signal.txt", "r");
+
         if (!f)
         {
         	perror("READ FROM FILE activated and file not found");
         	return ERR;
 		}
-
+	
+		//Ignore headers
+		printf("ignoring headers");
 		char buf[999];
 		fgets(buf, sizeof(char) * 200, f);
+		printf("%s\n", buf);
+		fgets(buf, sizeof(char) * 200, f);
+		printf("%s\n", buf);
+		fgets(buf, sizeof(char) * 200, f);
+		printf("%s\n", buf);
 	}
 
 	dsc = comedi_open("/dev/comedi0");

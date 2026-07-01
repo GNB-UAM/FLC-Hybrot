@@ -1,6 +1,7 @@
 import sys
 import pandas as pd
 import matplotlib.pyplot as plt
+import numpy as np
 
 
 def plot_single(filename):
@@ -15,7 +16,7 @@ def plot_single(filename):
 	v2 = [x*1000 for x in v]
 
 	fig = plt.figure(figsize=(12,8))
-    
+	
 	#Plots
 	ax1 = plt.subplot(3, 1, 1)
 	plt.ylabel("Voltage (V)")
@@ -41,12 +42,12 @@ def plot_single(filename):
 
 
 
-def plot_invariant(filename):
+def plot_invariant(filename, th_lo_per, th_up_per):
 	start = 10000
 	end = -1
-	dataset = pd.read_csv(filename, delimiter=' ', header=2)
+	dataset = pd.read_csv(filename, delimiter=' ', header=3)
 	data = dataset.values
-	i = [x / 1000000 for x in data[start:end,0]] # s
+	t = np.array([x / 1000000 for x in data[start:end,0]]) # s
 	c = data[start:end,1]
 	v_pd = data[start:end,2]
 	v_lp = data[start:end,3]
@@ -64,27 +65,44 @@ def plot_invariant(filename):
 	#Plots
 	ax1 = plt.subplot(5, 1, 1)
 	plt.ylabel("Voltage (V)")
-	plt.plot(i, v_lp)
-	plt.plot(i, e_lp)
-	plt.plot(i, e_lp_end)
+	plt.plot(t, v_lp)
+	on_events = t[np.where(e_lp)]
+	off_events = t[np.where(e_lp_end)]
+	plt.plot(on_events, np.ones(on_events.shape)*np.max(v_lp), '.', markersize=10, color='green')
+	plt.plot(off_events, np.ones(off_events.shape)*np.max(v_lp), '.', markersize=10, color='red')
 
+	th_up = np.min(v_lp) + ((np.max(v_lp)-np.min(v_lp)) * th_up_per)
+	th_lo = np.min(v_lp) + ((np.max(v_lp)-np.min(v_lp)) * np.ones(len(t))*0.4)
+	plt.hlines(th_up, xmin=t[0], xmax=t[-1], label="th_up", linestyles="dashed", color='purple')
+	plt.hlines(th_lo, xmin=t[0], xmax=t[-1], label="th_low (fixed)", linestyles="dashed", color='black')
+	plt.legend()
+	
 	ax2 = plt.subplot(5, 1, 2, sharex=ax1)
 	plt.ylabel("Voltage (V)")
-	plt.plot(i, v_pd)
-	plt.plot(i, e_pd)
-	plt.plot(i, e_pd_end)
+	plt.plot(t, v_pd)
+
+	on_events = t[np.where(e_pd)]
+	off_events = t[np.where(e_pd_end)]
+	plt.plot(on_events, np.ones(on_events.shape)*np.max(v_pd), '.', markersize=10, color='green')
+	plt.plot(off_events, np.ones(off_events.shape)*np.max(v_pd), '.', markersize=10, color='red')
+
+	th_up = np.min(v_pd) + ((np.max(v_pd)-np.min(v_pd)) * np.ones(len(t))*0.4)
+	th_lo = np.min(v_pd) + ((np.max(v_pd)-np.min(v_pd)) * th_lo_per)
+	plt.hlines(th_up, xmin=t[0], xmax=t[-1], label="th_up_per", linestyles="dashed", color='black')
+	plt.hlines(th_lo, xmin=t[0], xmax=t[-1], label="th_low_per", linestyles="dashed", color='purple')
+	plt.legend()
 
 	ax3 = plt.subplot(5, 1, 3, sharex=ax1)
 	plt.ylabel("Current (nA)")
-	plt.plot(i, c)
+	plt.plot(t, c)
 
 	ax4 = plt.subplot(5, 1, 4, sharex=ax1)
 	plt.ylabel("First interval (s)")
-	plt.plot(i, first_interval)
+	plt.plot(t, first_interval)
 
 	ax4 = plt.subplot(5, 1, 5, sharex=ax1)
 	plt.ylabel("Second interval (s)")
-	plt.plot(i, second_interval)
+	plt.plot(t, second_interval)
 
 	plt.xlabel("Time (s)")
 	plt.tight_layout()
@@ -94,25 +112,30 @@ def plot_invariant(filename):
 
 
 filename = ""
-
 if len(sys.argv) < 2:
 	print("Filename missing!")
 	sys.exit()
 else:
 	filename = sys.argv[1]
 
-file = open(filename,'r')
-line = file.readline()
+file = open(filename, 'r')
+line = file.readline()		# primera línea
+second_line = file.readline() # segunda línea
 file.close()
 
-line = line.strip('\n')
+# Extraer los dos parámetros de la segunda línea
+# Formato esperado: "th_lo_per 0.40 th_up_per 0.70"
+parts = second_line.split()
+th_lo_per = float(parts[1])
+th_up_per = float(parts[3])
 
+line = line.strip('\n')
 if line == "0":
 	print("Single neuron experiment")
 	plot_single(filename)
 elif line == "1":
 	print("Invariant experiment")
-	plot_invariant(filename)
+	plot_invariant(filename, th_lo_per, th_up_per)
 else:
 	print("Unknown type of experiment.")
 	sys.exit()

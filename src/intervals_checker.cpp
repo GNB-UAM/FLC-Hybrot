@@ -2,8 +2,6 @@
 #include "../includes/common_functions.h"
 #include "../includes/device_functions.h"
 
-using namespace LibSerial;
-
 struct option main_opts[] = {
 	{"experiment_type", required_argument, NULL, 'E'},
 	{"frequency", required_argument, NULL, 'f'},
@@ -11,15 +9,13 @@ struct option main_opts[] = {
 	{"current", required_argument, NULL, 'c'},
 	{"stimulation_type", required_argument, NULL, 'S'},
 	{"pulse_duration", required_argument, NULL, 'D'},
-	{"lower_threshold_lp", required_argument, NULL, 'L'},
-	{"upper_threshold_lp", required_argument, NULL, 'U'},
-	{"lower_threshold_pd", required_argument, NULL, 'l'},
-	{"upper_threshold_pd", required_argument, NULL, 'u'},
+	{"lower_threshold", required_argument, NULL, 'L'},
+	{"upper_threshold", required_argument, NULL, 'U'},
 	{"input_channels", required_argument, NULL, 'i'},
 	{"output_channels", required_argument, NULL, 'o'},
-	{"serial_port", required_argument, NULL, 'P'},
+	{"serial_port", required_argument, NULL, 'p'},
 	{"output_factor", required_argument, NULL, 'O'},
-	{"photodiode_threshold", required_argument, NULL, 'p'},
+	{"light_threshold", required_argument, NULL, 'l'},
 	{"light_gain", required_argument, NULL, 'g'},
 	{"help", no_argument, NULL, 'h'},
 	{0},
@@ -98,7 +94,10 @@ int main (int argc, char *argv[]) {
 	char serial_port_name[30];
 	memset(serial_port_name, '\0', sizeof(serial_port_name));
 	strcpy(serial_port_name, "/dev/ttyUSB0");
-
+    
+    char * filename;
+	char buffer[250];
+    filename = buffer;
 
 	int experiment_type = 1; // default Invariants
 	int stimulation_type = 0;
@@ -107,10 +106,8 @@ int main (int argc, char *argv[]) {
 	int duration = 120;
 	int observation_time = 10;
 	double max_current = 0.01;
-	double th_lo_per_lp = 0.1;
-	double th_up_per_lp = 0.7;
-	double th_lo_per_pd = 0.1;
-	double th_up_per_pd = 0.7;
+	double th_lo_per = 0.1;
+	double th_up_per = 0.7;
 	double output_factor = 1;
 	float current_factor = 1;
 
@@ -128,7 +125,7 @@ int main (int argc, char *argv[]) {
 	int light_value;
 	int ret;
 
-	while ((ret = getopt_long(argc, argv, "E:f:t:L:U:l:u:c:S:D:i:o:P:O:F:p:g:h", main_opts, NULL)) >= 0) {
+	while ((ret = getopt_long(argc, argv, "E:f:t:L:U:c:S:D:i:o:p:O:F:l:g:d:h", main_opts, NULL)) >= 0) {
 		switch (ret) {
 			case 'E':
 				experiment_type = atoi(optarg);
@@ -140,16 +137,10 @@ int main (int argc, char *argv[]) {
 				duration = atoi(optarg);
 				break;
 			case 'L':
-				th_lo_per_lp = atof(optarg);
+				th_lo_per = atof(optarg);
 				break;
 			case 'U':
-				th_up_per_lp = atof(optarg);
-				break;
-			case 'l':
-				th_lo_per_pd = atof(optarg);
-				break;
-			case 'u':
-				th_up_per_pd = atof(optarg);
+				th_up_per = atof(optarg);
 				break;
 			case 'c':
 				max_current = atof(optarg);
@@ -166,7 +157,7 @@ int main (int argc, char *argv[]) {
 			case 'o':
 				parse_channels(optarg, &(out_channels), &(n_out_chan));
 				break;
-			case 'P':
+			case 'p':
 				memset(serial_port_name, '\0', sizeof(serial_port_name));
 				strcpy(serial_port_name, optarg);
 				break;
@@ -175,12 +166,15 @@ int main (int argc, char *argv[]) {
 			case 'F':
 				current_factor = atof(optarg);
 				break;
-			case 'p':
+			case 'l':
 				light_threshold = atoi(optarg);
 				break;
 			case 'g':
 				light_gain = atof(optarg);
 				break;
+            case 'd':
+                strncpy(filename, optarg, sizeof(buffer) - 1);
+                break;
 			case 'h':
 			default:
 				do_print_usage();
@@ -205,13 +199,14 @@ int main (int argc, char *argv[]) {
 	}
 
 	// Init
-	if (init_params(&params, &serial_stream, experiment_type, stimulation_type, n_in_chan, duration, freq, max_current, th_lo_per_pd, th_up_per_lp) != OK) {
+	if (init_params(&params, &serial_stream, experiment_type, stimulation_type, n_in_chan, duration, freq, max_current, th_lo_per, th_up_per) != OK) {
 		printf("Wrong number of input channels.\n");
 		free(in_channels);
     	free(out_channels);
 		return ERR;
 	}
 
+    printf("File received with name: %s\n", filename);
 
 	if(light_gain < 0)
 	{
@@ -224,62 +219,28 @@ int main (int argc, char *argv[]) {
 	}
 
 
-	/****************************************************
-    Open DAQ
+    	/****************************************************
+    Open FILE
     ****************************************************/
-    if (daq_open_device((void**) &dsc) != OK) {
+    if (daq_open_device((void **) &filename) != OK) {
         fprintf(stderr, "RT_THREAD: error opening device.\n");
 
         return ERR;
     }
-
-    if (daq_create_session ((void**) &dsc, &session) != OK) {
-        fprintf(stderr, "RT_THREAD: error creating DAQ session.\n");
-        daq_close_device ((void**) &dsc);
-
-        return ERR;
-    }
-
-    printf("DAQ connected correctly\n");
 
     input_values = (double *) malloc (sizeof(double) * n_in_chan);
     output_values = (double *) malloc (sizeof(double) * n_out_chan);
 
 
     for (i = 0; i < n_out_chan; i++) {
-        input_values[i] = 0;
+        input_values[i] = 0.0;
     }
     for (i = 0; i < n_out_chan; i++) {
-        output_values[i] = 0;
+        output_values[i] = 0.0;
     }
-
-    if (daq_write(session, n_out_chan, out_channels, output_values) != OK) {
-        fprintf(stderr, "RT_THREAD: error writing to DAQ.\n");
-        daq_close_device ((void**) &dsc);
-
-        return ERR;
-    }
-
-    /****************************************************
-    Open serial connection
-    ****************************************************/
-    if (params->serial_stream->IsOpen() == false){
-		params->serial_stream->Open(serial_port_name);
-		params->serial_stream->SetBaudRate(BaudRate::BAUD_19200);
-		params->serial_stream->SetCharacterSize(CharacterSize::CHAR_SIZE_8);
-		params->serial_stream->SetStopBits(StopBits::STOP_BITS_1);
-	}
-	else
-		perror("Serial stream closed\n");
 
 	printf("Channel/Column for PD intervals: %d\n", in_channels[INV_PD]);
 	printf("Channel/Column for LP intervals: %d\n", in_channels[INV_LP]);
-
-
-	// Stop robot for calibration
-	// The robot will start when receiving the first cycle
-	sleep(1);
-	*(params->serial_stream) << "0,0\n";
 
 
 	printf("Start observation (%ds) and interaction (%ds)\n", observation_time/freq, duration/freq);
@@ -303,27 +264,17 @@ int main (int argc, char *argv[]) {
 
         ts_add_time(&ts_target, 0, period);
 
+        // printf("Trying to read from file\n");
         /* Read from DAQ */
 		if (daq_read(session, n_in_chan, in_channels, input_values) != 0) {
 
-            for (i = 0; i < n_out_chan; i++) {
-                output_values[i] = 0.0;
-            }
-
-            if (daq_write(session, n_out_chan, out_channels, output_values) != OK) {
-                fprintf(stderr, "RT_THREAD: error writing to DAQ.\n");
-                daq_close_device ((void**) &dsc);
-                return ERR;
-            }
-
-            free(session);
             daq_close_device ((void**) &dsc);
 		    free(input_values);
 		    free(output_values);
 
             return ERR;
         }
-
+        // printf("finished reading \n");
         /* Update min and max in the temporal window */
         update_min_max_window_first(params, input_values);
 	}
@@ -349,25 +300,10 @@ int main (int argc, char *argv[]) {
 
         ts_add_time(&ts_target, 0, period);
 
-        /* Read from serial */
-		if (params->serial_stream->IsDataAvailable()) {
-			
-			params->serial_stream->get(next_char);
-			light_value = (unsigned char) next_char;
-			printf("Light value %d\n", light_value);
-		}
-
-
 		/* Read from DAQ */
 		if (daq_read(session, n_in_chan, in_channels, input_values) != 0) {
             for (i = 0; i < n_out_chan; i++) {
-                output_values[i] = 0;
-            }
-
-            if (daq_write(session, n_out_chan, out_channels, output_values) != OK) {
-                fprintf(stderr, "RT_THREAD: error writing to DAQ.\n");
-                daq_close_device ((void**) &dsc);
-                return ERR;
+                output_values[i] = 0.0;
             }
 
             free(session);
@@ -401,23 +337,11 @@ int main (int argc, char *argv[]) {
 
         select_stimulus(params, output_values, target_current, current_factor);
 
-   		/* Write to DAQ */
-        if (daq_write(session, n_out_chan, out_channels, output_values) != OK) {
-	        fprintf(stderr, "RT_THREAD: error writing to DAQ.\n");
-	        daq_close_device ((void**) &dsc);
-
-	        return ERR;
-	    }
-
 
 	    /* Save time and current */
 	    params->data[CURRENT][i] = output_values[0] * output_factor;
         params->data[REALTIME][i] = t_elapsed;
 	}
-
-
-    // Reset Arduino
-	*(params->serial_stream) << "0,0\n";
 
 
 	/****************************************************
@@ -428,21 +352,9 @@ int main (int argc, char *argv[]) {
     printf("Data saved!\n");
 
 
-
 	/****************************************************
     Clean up and finish
     ****************************************************/
-
-	/*Send zero to DAQ*/
-    for (i = 0; i < n_out_chan; i++) {
-        output_values[i] = 0;
-    }
-    if (daq_write(session, n_out_chan, out_channels, output_values) != OK) {
-        fprintf(stderr, "RT_THREAD: error writing to DAQ.\n");
-        daq_close_device ((void**) &dsc);
-
-        return ERR;
-    }
 
     free(session);
     daq_close_device ((void**) &dsc);
@@ -453,8 +365,7 @@ int main (int argc, char *argv[]) {
     free(out_channels);
     free_params(&params);
 
-    
-    printf("Plotting result with python\n");
+    printf("Plotting result with python");
     char cmd[256];
     snprintf(cmd, sizeof(cmd), "python plot_controller.py %s", outname);
     system(cmd);

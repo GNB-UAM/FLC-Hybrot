@@ -48,3 +48,41 @@ List of periferical devices attatch to Arduiono BQ Zum Core:
 - Photoresistor for light detection
 - Atmel ATMEGA328P
 - LEDs
+
+
+## How to run the controller
+Once the realtime system is ready, open a terminal and change to FLC-Hybrot directory. For example:
+    
+    cd Desktop/FLC-Hybrot/
+
+Then follow this steps:
+
+  1. Compile the code with make
+
+    make
+
+  2. Run the controller command with sudo, you can include a safety make in case you do any changes in the code before running:
+    
+     make; sudo ./controller -i 4,2 -o 0 -p /dev/rfcomm0 -l 20 -F 1 -c -0.3 -L 0.3 -U 0.7 -t 90
+
+
+Note: you can see a description of the parameters by runnning:
+
+    ./controller -h
+
+To display the results first activate the environment:
+
+    conda activate hybrot
+
+and then run the plotter to display last file result
+
+    python plot_controller.py data/2026y_6m_23d/16h_55m_56s.txt
+
+You can find the filename at the end of the experiment, you will see something like:
+
+  > Ended experiment. Saving data to file...
+Filename: data/2026y_6m_25d/13h_6m_35s.txt
+Data saved!
+
+
+
