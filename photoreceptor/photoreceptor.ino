@@ -15,7 +15,7 @@ int flag = 0;
 String str1 = "";
 String str2 = "";
 
-int ajuste_direccion = 0; // ESTO CALIBRA LA DIRECCIÓN
+float ajuste_direccion = 0.9; // ESTO CALIBRA LA DIRECCIÓN
 int A_aux;
 
 void setup() {
@@ -99,7 +99,7 @@ void loop() {
           T = 250;
         }
   
-        A_aux = A + ajuste_direccion;
+        A_aux = A * ajuste_direccion;
         if (A_aux < 0) {
             A_aux = 0;
         } else if (A_aux > 40) {
