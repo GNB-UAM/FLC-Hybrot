@@ -168,31 +168,27 @@ int read_single_data_comedi (Daq_session * session, comedi_range * range_info, l
 
 
 int read_single_data_file (int * channels, int n_channels, double ** ret) {
+	// Read file data into buffer
 	char buf[999];
 	fgets(buf, sizeof(char) * 200, f);
-	//printf("%s\n", buf);
+	printf("%s\n", buf);
 
 	int k = 0;
 	char * elemento;
+
+	//Check first element from the first line.
 	elemento = strtok(buf, " ");
 
-	if (elemento == NULL) return -1;
-
-	for (int i = 0; i < n_channels; i++) {
-		if (k == channels[i]) {
-			(*ret)[i] = atof(elemento); 
-		}
-	}
-
+	//Parse all lines
 	while (elemento != NULL) {
-		k++;
-		elemento = strtok(NULL, " ");
-
+		// Parse a single line
 		for (int i = 0; i < n_channels; i++) {
 			if (k == channels[i]) {
-				(*ret)[i] = atof(elemento); 
+				(*ret)[i] = atof(elemento);
 			}
 		}
+		k++;
+		elemento = strtok(NULL, " ");
 	}
 
 	return 0;
