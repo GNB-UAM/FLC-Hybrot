@@ -4,6 +4,8 @@
 
 using namespace LibSerial;
 
+#define MAX_LIGHT 50
+
 struct option main_opts[] = {
 	{"experiment_type", required_argument, NULL, 'E'},
 	{"frequency", required_argument, NULL, 'f'},
@@ -394,14 +396,23 @@ int main (int argc, char *argv[]) {
 
 
         /* Stimulation */
-        if (light_value < light_threshold) {
-        	// printf("light_value and light threshold: %d %d\n",light_value,light_threshold );
-			target_current = max_current;
-		} else {
-			target_current = 0.0;
+		if (light_gain < 0){
+			if (light_value < light_threshold) {
+				// printf("light_value and light threshold: %d %d\n",light_value,light_threshold );
+				target_current = max_current;
+			} else {
+				target_current = 0.0;
+			}
+
+
+        	select_stimulus(params, output_values, target_current, current_factor);
+
+		} else 
+		{
+			target_current = (MAX_LIGHT - light_value) / light_gain; // 1000
+			output_values[0] = -target_current; //WARNING: CURRENT IS ALWAYS NEGATIVE
 		}
 
-        select_stimulus(params, output_values, target_current, current_factor);
 
    		/* Write to DAQ */
         if (daq_write(session, n_out_chan, out_channels, output_values) != OK) {
