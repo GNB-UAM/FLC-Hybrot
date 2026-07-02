@@ -182,19 +182,19 @@ void burst_detection_invariant (Params * params, double * input_values, int i) {
 		for (j=0; j < 10; j++) {
 			mean_1 += data[INV_PD_V][i-j];
 		}
-		mean_1 /= VFACTOR; //Convert to mV
+		mean_1 /= 10; 
 
 		//Mean of 10 next points of the pd
 		for (j=10; j < 20; j++) {
 			mean_2 += data[INV_PD_V][i-j];
 		}
-		mean_2 /= VFACTOR; //Convert to mV
+		mean_2 /= 10; 
 
 		//Mean of 10 last points of the pd
 		for (j=20; j < 30; j++) {
 			mean_3 += data[INV_PD_V][i-j];
 		}
-		mean_3 /= VFACTOR; //Convert to mV
+		mean_3 /= 10; 
 
 		if ((mean_2 < mean_1) && mean_2 > mean_3) {
 			if (data[INV_PD_V][i] > pd->th_up)
@@ -341,7 +341,8 @@ void write_to_file_invariant (Params * params, int duration, char * filename) {
 
     FILE * f = fopen(filename, "w");
 
-    fprintf(f, "1\nth_lo_per %.2f th_up_per %.2f\n", params->channels[INV_PD].th_lo_per, params->channels[INV_LP].th_up_per);
+    fprintf(f, "1\nth_lo_per_pd %.2f th_up_per_lp %.2f th_lo_per_lp %.2f th_up_per_pd %.2f \n", params->channels[INV_PD].th_lo_per, params->channels[INV_LP].th_up_per
+																							  , params->channels[INV_LP].th_lo_per, params->channels[INV_PD].th_up_per);
 	
 	fprintf(f, "Time Current Inv_PD_V INV_LP_V INV_PD_EVENT INV_PD_END_EVENT INV_LP_EVENT INV_LP_END_EVENT INV_LP_PERIOD_ALL INV_SECOND_ALL);\n");
 
