@@ -20,6 +20,7 @@ struct option main_opts[] = {
 	{"serial_port", required_argument, NULL, 'P'},
 	{"output_factor", required_argument, NULL, 'O'},
 	{"photodiode_threshold", required_argument, NULL, 'p'},
+	{"current_factor", required_argument, NULL, 'F'},
 	{"light_gain", required_argument, NULL, 'g'},
 	{"help", no_argument, NULL, 'h'},
 	{0},
@@ -40,6 +41,7 @@ void do_print_usage ()
 	printf("\t\t -o, --output_channels: output channels, separated by commas (ej: 0,2,3,7)\n");
 	printf("\t\t -p, --serial_port: serial port\n");
 	printf("\t\t -O, --output_factor: output factor\n");
+	printf("\t\t -F, --current_factor: current factor\n");
 	printf("\t\t -l, --light_threshold: light threshold\n");
 	printf("\t\t -g, --light_gain: light gain\n");
 	printf("\t\t -h, --help: print this help\n");
@@ -106,7 +108,7 @@ int main (int argc, char *argv[]) {
 	int period;
 	int duration = 120;
 	int observation_time = 10;
-	double max_current = 0.01;
+	double max_current = 0.0;
 	double th_lo_per_lp = 0.1;
 	double th_up_per_lp = 0.7;
 	double th_lo_per_pd = 0.1;
@@ -120,9 +122,9 @@ int main (int argc, char *argv[]) {
 	int * in_channels = NULL;
 
 	int pulse_duration = 1;
-	double target_current = 0;
+	double target_current = 0.0;
 
-	int light_threshold = 50; // parameter for photodiode 
+	int light_threshold = 20; // parameter for photodiode 
 	double light_gain = -1; // light gain factor for direct conversion to current
 
 	int light_value;
@@ -247,10 +249,10 @@ int main (int argc, char *argv[]) {
 
 
     for (i = 0; i < n_out_chan; i++) {
-        input_values[i] = 0;
+        input_values[i] = 0.0;
     }
     for (i = 0; i < n_out_chan; i++) {
-        output_values[i] = 0;
+        output_values[i] = 0.0;
     }
 
     if (daq_write(session, n_out_chan, out_channels, output_values) != OK) {
@@ -354,14 +356,14 @@ int main (int argc, char *argv[]) {
 			
 			params->serial_stream->get(next_char);
 			light_value = (unsigned char) next_char;
-			printf("Light value %d\n", light_value);
+			// printf("Light value %d\n", light_value);
 		}
 
 
 		/* Read from DAQ */
 		if (daq_read(session, n_in_chan, in_channels, input_values) != 0) {
             for (i = 0; i < n_out_chan; i++) {
-                output_values[i] = 0;
+                output_values[i] = 0.0;
             }
 
             if (daq_write(session, n_out_chan, out_channels, output_values) != OK) {
@@ -435,7 +437,7 @@ int main (int argc, char *argv[]) {
 
 	/*Send zero to DAQ*/
     for (i = 0; i < n_out_chan; i++) {
-        output_values[i] = 0;
+        output_values[i] = 0.0;
     }
     if (daq_write(session, n_out_chan, out_channels, output_values) != OK) {
         fprintf(stderr, "RT_THREAD: error writing to DAQ.\n");
