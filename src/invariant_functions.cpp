@@ -2,17 +2,16 @@
 
 using namespace LibSerial;
 
-#define VFACTOR 10 //10  /Conversion from DAQ value to mV
 #define TEMPORAL_FACTOR 1
 #define MIN_PERIOD 500
 #define MAX_AMPLITUDE 40
 #define MIN_AMPLITUDE 6
 
+// TODO change to input parameters and save
 #define USE_INTERVAL 0// 0 = LPPD interval; 1 = PD burst
 
 #define NORM_MIN 250//50 burst values//250.0 interval values// 994.8 old values
 #define NORM_MAX 2500//350 // 2500.0// 2217.8
-#define SLOPE -0.0015//-0.0035
 
 int init_params_invariant (Params ** params, int duration, SerialStream * serial_stream, double th_lo_per_pd, double th_up_per_pd, double th_lo_per_lp, double th_up_per_lp) {
 	*params = (Params *) malloc (sizeof(Params));
