@@ -42,8 +42,8 @@ def plot_single(filename):
 
 
 
-def plot_invariant(filename, th_lo_per, th_up_per):
-	start = 10000
+def plot_invariant(filename, th_lo_per, th_up_per, th_lo_per_lp=None, th_up_per_pd=None):
+	start = 0
 	end = -1
 	dataset = pd.read_csv(filename, delimiter=' ', header=3)
 	data = dataset.values
@@ -72,9 +72,16 @@ def plot_invariant(filename, th_lo_per, th_up_per):
 	plt.plot(off_events, np.ones(off_events.shape)*np.max(v_lp), '.', markersize=10, color='red')
 
 	th_up = np.min(v_lp) + ((np.max(v_lp)-np.min(v_lp)) * th_up_per)
-	th_lo = np.min(v_lp) + ((np.max(v_lp)-np.min(v_lp)) * np.ones(len(t))*0.4)
 	plt.hlines(th_up, xmin=t[0], xmax=t[-1], label="th_up", linestyles="dashed", color='purple')
-	plt.hlines(th_lo, xmin=t[0], xmax=t[-1], label="th_low (fixed)", linestyles="dashed", color='black')
+
+	if th_lo_per_lp is None:
+		th_lo = np.min(v_lp) + ((np.max(v_lp)-np.min(v_lp)) * 0.4)
+		plt.hlines(th_lo, xmin=t[0], xmax=t[-1], label="th_low (fixed)", linestyles="dashed", color='black')
+	else:
+		th_lo = np.min(v_lp) + ((np.max(v_lp)-np.min(v_lp)) * th_lo_per_lp)
+		plt.hlines(th_lo, xmin=t[0], xmax=t[-1], label="th_low", linestyles="dashed", color='navy')
+
+
 	plt.legend()
 	
 	ax2 = plt.subplot(5, 1, 2, sharex=ax1)
@@ -86,10 +93,16 @@ def plot_invariant(filename, th_lo_per, th_up_per):
 	plt.plot(on_events, np.ones(on_events.shape)*np.max(v_pd), '.', markersize=10, color='green')
 	plt.plot(off_events, np.ones(off_events.shape)*np.max(v_pd), '.', markersize=10, color='red')
 
-	th_up = np.min(v_pd) + ((np.max(v_pd)-np.min(v_pd)) * np.ones(len(t))*0.4)
 	th_lo = np.min(v_pd) + ((np.max(v_pd)-np.min(v_pd)) * th_lo_per)
-	plt.hlines(th_up, xmin=t[0], xmax=t[-1], label="th_up_per", linestyles="dashed", color='black')
-	plt.hlines(th_lo, xmin=t[0], xmax=t[-1], label="th_low_per", linestyles="dashed", color='purple')
+	plt.hlines(th_lo, xmin=t[0], xmax=t[-1], label="th_low", linestyles="dashed", color='navy')
+
+	if th_up_per_pd is None:
+		th_up = np.min(v_pd) + ((np.max(v_pd)-np.min(v_pd)) * 0.7)
+		plt.hlines(th_up, xmin=t[0], xmax=t[-1], label="th_up (fixed)", linestyles="dashed", color='black')
+	else:
+		th_up = np.min(v_pd) + ((np.max(v_pd)-np.min(v_pd)) * th_up_per_pd)
+		plt.hlines(th_up, xmin=t[0], xmax=t[-1], label="th_up", linestyles="dashed", color='purple')
+	
 	plt.legend()
 
 	ax3 = plt.subplot(5, 1, 3, sharex=ax1)
@@ -129,13 +142,22 @@ parts = second_line.split()
 th_lo_per = float(parts[1])
 th_up_per = float(parts[3])
 
+try:
+	th_lo_per_lp = float(parts[5])
+	th_up_per_pd = float(parts[7])
+except:
+	th_lo_per_lp = None
+	th_up_per_pd = None
+
+print(th_lo_per_lp, th_up_per_pd)
+
 line = line.strip('\n')
 if line == "0":
 	print("Single neuron experiment")
 	plot_single(filename)
 elif line == "1":
 	print("Invariant experiment")
-	plot_invariant(filename, th_lo_per, th_up_per)
+	plot_invariant(filename, th_lo_per, th_up_per, th_lo_per_lp, th_up_per_pd)
 else:
 	print("Unknown type of experiment.")
 	sys.exit()
