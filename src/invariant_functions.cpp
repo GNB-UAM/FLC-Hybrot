@@ -174,7 +174,7 @@ void burst_detection_invariant (Params * params, double * input_values, int i) {
 	//} else if (data[INV_PD_V][i] > pd->th_up) {
 	//} else if (data[INV_PD_V][i] > pd->th_up && (data[INV_PD_V][i] - data[INV_PD_V][i-1] > (0.6/25))) {
 	//Detect all spikes in PD to keep the last one
-	} else if (i >= 30 && data[INV_PD_V][i] > pd->th_up) {
+	} else if (i >= 30 && data[INV_PD_V][i] > pd->th_lo) {
 		double mean_1 = 0, mean_2 = 0, mean_3 = 0;
 		int j;
 
@@ -196,9 +196,9 @@ void burst_detection_invariant (Params * params, double * input_values, int i) {
 		}
 		mean_3 /= VFACTOR; //Convert to mV
 
-		// if ((mean_1 < mean_2) && mean_2 > mean_3) {
-		if ((mean_1 - mean_2 < SLOPE) && mean_2 > mean_3) {
-			last_spike_pd_t = i-15;
+		if ((mean_2 < mean_1) && mean_2 > mean_3) {
+			if (data[INV_PD_V][i] > pd->th_up)
+				last_spike_pd_t = i-15;
 		}
 		
 	} else if (data[INV_PD_V][i] < pd->th_lo && pd->flag == 0) {
