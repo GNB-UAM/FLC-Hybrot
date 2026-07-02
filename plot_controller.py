@@ -132,11 +132,11 @@ else:
 	filename = sys.argv[1]
 
 file = open(filename, 'r')
-line = file.readline()		# primera línea
-second_line = file.readline() # segunda línea
+line = file.readline()		# primera linea
+second_line = file.readline() # segunda linea
 file.close()
 
-# Extraer los dos parámetros de la segunda línea
+# Extraer los dos parametros de la segunda linea
 # Formato esperado: "th_lo_per 0.40 th_up_per 0.70"
 parts = second_line.split()
 th_lo_per = float(parts[1])
