@@ -14,7 +14,7 @@ using namespace LibSerial;
 #define NORM_MAX 2500//350 // 2500.0// 2217.8
 #define SLOPE -0.0015//-0.0035
 
-int init_params_invariant (Params ** params, int duration, SerialStream * serial_stream, double th_lo_per, double th_up_per) {
+int init_params_invariant (Params ** params, int duration, SerialStream * serial_stream, double th_lo_per_pd, double th_up_per_pd, double th_lo_per_lp, double th_up_per_lp) {
 	*params = (Params *) malloc (sizeof(Params));
 	Params * aux_params = *params;
 
@@ -28,16 +28,16 @@ int init_params_invariant (Params ** params, int duration, SerialStream * serial
 	aux_params->channels[INV_PD].min_window = 999999;
 	aux_params->channels[INV_PD].max_window = -999999;
 	aux_params->channels[INV_PD].flag = 0;
-	aux_params->channels[INV_PD].th_lo_per = th_lo_per;
-	aux_params->channels[INV_PD].th_up_per = 0.7;
+	aux_params->channels[INV_PD].th_lo_per = th_lo_per_pd;
+	aux_params->channels[INV_PD].th_up_per = th_up_per_pd; //0.7
 
 	aux_params->channels[INV_LP].min = 999999;
 	aux_params->channels[INV_LP].max = -999999;
 	aux_params->channels[INV_LP].min_window = 999999;
 	aux_params->channels[INV_LP].max_window = -999999;
 	aux_params->channels[INV_LP].flag = 0;
-	aux_params->channels[INV_LP].th_lo_per = 0.4;
-	aux_params->channels[INV_LP].th_up_per = th_up_per;
+	aux_params->channels[INV_LP].th_lo_per = th_lo_per_lp;//0.4;
+	aux_params->channels[INV_LP].th_up_per = th_up_per_lp;
 
 	aux_params->data = (double **) malloc (sizeof(double *) * N_DATA_VARIABLES);
 

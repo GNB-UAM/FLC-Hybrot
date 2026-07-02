@@ -3,16 +3,16 @@
 using namespace LibSerial;
 
 int init_params (Params ** params, SerialStream * serial_stream, int experiment_type, int stimulation_type, 
-	int n_in_chan, int duration, int freq, double max_current, double th_lo_per, double th_up_per) {
+	int n_in_chan, int duration, int freq, double max_current, double th_lo_per_pd, double th_up_per_pd, double th_lo_per_lp, double th_up_per_lp) {
 	if (experiment_type == EXP_SINGLE) { // Single
 		if (n_in_chan >= 1) {
-			init_params_single(params, duration, serial_stream, th_lo_per, th_up_per);
+			init_params_single(params, duration, serial_stream, th_lo_per_pd, th_up_per_pd, th_lo_per_lp, th_up_per_lp);
 		} else {
 			return ERR;
 		}
 	} else if (experiment_type == EXP_INVARIANT) { // Invariant
 		if (n_in_chan >= 2) {
-			init_params_invariant(params, duration, serial_stream, th_lo_per, th_up_per);
+			init_params_invariant(params, duration, serial_stream, th_lo_per_pd, th_up_per_pd, th_lo_per_lp, th_up_per_lp);
 		} else {
 			return ERR;
 		}

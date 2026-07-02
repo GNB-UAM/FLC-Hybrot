@@ -199,7 +199,7 @@ int main (int argc, char *argv[]) {
 	}
 
 	// Init
-	if (init_params(&params, &serial_stream, experiment_type, stimulation_type, n_in_chan, duration, freq, max_current, th_lo_per, th_up_per) != OK) {
+	if (init_params(&params, &serial_stream, experiment_type, stimulation_type, n_in_chan, duration, freq, max_current, th_lo_per, 0.7, 0.4, th_up_per) != OK) {
 		printf("Wrong number of input channels.\n");
 		free(in_channels);
     	free(out_channels);

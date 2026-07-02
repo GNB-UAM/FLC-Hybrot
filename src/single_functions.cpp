@@ -2,7 +2,7 @@
 
 using namespace LibSerial;
 
-int init_params_single (Params ** params, int duration, SerialStream * serial_stream, double th_lo_per, double th_up_per) {
+int init_params_single (Params ** params, int duration, SerialStream * serial_stream, double th_lo_per_pd, double th_up_per_pd, double th_lo_per_lp, double th_up_per_lp) {
 	*params = (Params *) malloc (sizeof(Params));
 	Params * aux_params = *params;
 
@@ -16,8 +16,8 @@ int init_params_single (Params ** params, int duration, SerialStream * serial_st
 	aux_params->channels[0].min_window = 999999;
 	aux_params->channels[0].max_window = -999999;
 	aux_params->channels[0].flag = 0;
-	aux_params->channels[0].th_lo_per = th_lo_per;
-	aux_params->channels[0].th_up_per = th_up_per;
+	aux_params->channels[0].th_lo_per = th_lo_per_pd;
+	aux_params->channels[0].th_up_per = th_up_per_lp;
 
 	aux_params->data = (double **) malloc (sizeof(double *) * 6);
 	aux_params->data[REALTIME] = (double *) malloc (sizeof(double) * duration);

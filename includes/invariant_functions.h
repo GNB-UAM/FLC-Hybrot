@@ -42,7 +42,7 @@
 #define INV_SIZE_PD_HYPER 10
 
 
-int init_params_invariant (Params ** params, int duration, SerialStream * serial_stream, double th_lo_per, double th_up_per);
+int init_params_invariant (Params ** params, int duration, SerialStream * serial_stream, double th_lo_per_pd, double th_up_per_pd, double th_lo_per_lp, double th_up_per_lp);
 
 void free_params_invariant (Params ** params);
 

@@ -3,7 +3,7 @@
 #include "stimulation_functions.h"
 
 int init_params (Params ** params, SerialStream * serial_stream, int experiment_type, int stimulation_type, 
-	int n_in_chan, int duration, int freq, double max_current, double th_lo_per, double th_up_per);
+	int n_in_chan, int duration, int freq, double max_current, double th_lo_per_pd, double th_up_per_pd, double th_lo_per_lp, double th_up_per_lp);
 
 void free_params (Params ** params);
 
